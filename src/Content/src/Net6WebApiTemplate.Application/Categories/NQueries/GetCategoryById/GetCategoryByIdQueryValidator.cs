@@ -1,4 +1,4 @@
-﻿namespace Net6WebApiTemplate.Application.Categories.NQueries.GetProductById
+﻿namespace Net6WebApiTemplate.Application.Categories.NQueries.GetCategoryById
 {
     public class GetCategoryByIdQueryValidator
     {

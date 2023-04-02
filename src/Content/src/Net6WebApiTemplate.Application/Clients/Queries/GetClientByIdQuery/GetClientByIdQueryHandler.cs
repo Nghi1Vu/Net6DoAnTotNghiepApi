@@ -1,4 +1,4 @@
-﻿namespace Net6WebApiTemplate.Application.Clients.Commands.Queries.GetClientByIdQuery
+﻿namespace Net6WebApiTemplate.Application.Clients.Queries.GetClientByIdQuery
 {
     internal class GetClientByIdQueryHandler
     {

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using Net6WebApiTemplate.Application.Categories.Commands.DeleteCategory;
 
-namespace Net6WebApiTemplate.Application.Categories.Commands.DeleteProduct
+namespace Net6WebApiTemplate.Application.Categories.Commands.DeleteCategory
 {
     public class DeleteCategoryCommandValidator : AbstractValidator<DeleteCategoryCommand>
     {

@@ -1,10 +1,9 @@
 ﻿using MediatR;
-using Net6WebApiTemplate.Application.Categories.Commands.PatchCategory;
 using Net6WebApiTemplate.Application.Categories.Dto;
 using Net6WebApiTemplate.Application.Common.Exceptions;
 using Net6WebApiTemplate.Application.Common.Interfaces;
 using Net6WebApiTemplate.Domain.Entities;
-namespace Net6WebApiTemplate.Application.Categories.Commands.PatchProduct;
+namespace Net6WebApiTemplate.Application.Categories.Commands.PatchCategory;
 
 public class PatchCategoryCommandHandler : IRequestHandler<PatchCategoryCommand, CategoryDto>
 {

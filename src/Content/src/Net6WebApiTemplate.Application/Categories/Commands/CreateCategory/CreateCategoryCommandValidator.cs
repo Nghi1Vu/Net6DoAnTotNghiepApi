@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Localization;
-using Net6WebApiTemplate.Application.Categories.Commands.CreateCategory;
 
-namespace Net6WebApiTemplate.Application.Categories.Commands.CreateProduct
+namespace Net6WebApiTemplate.Application.Categories.Commands.CreateCategory
 {
     public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
     {

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Net6WebApiTemplate.Application.Common.Interfaces;
 
-namespace Net6WebApiTemplate.Application.Clients.Commands.Queries.GetClientsQuery
+namespace Net6WebApiTemplate.Application.Clients.Queries.GetClientsQuery
 {
     public class GetClientsQueryHandler : IRequestHandler<GetClientsQuery, IList<ClientDto>>
     {

@@ -4,8 +4,8 @@ using Net6WebApiTemplate.Api.Contracts.Version1.Requests;
 using Net6WebApiTemplate.Api.Routes.Version1;
 using Net6WebApiTemplate.Application.Clients.Commands.CreateClient;
 using Net6WebApiTemplate.Application.Clients.Commands.DeleteClient;
-using Net6WebApiTemplate.Application.Clients.Commands.Queries.GetClientByIdQuery;
-using Net6WebApiTemplate.Application.Clients.Commands.Queries.GetClientsQuery;
+using Net6WebApiTemplate.Application.Clients.Queries.GetClientByIdQuery;
+using Net6WebApiTemplate.Application.Clients.Queries.GetClientsQuery;
 using Net6WebApiTemplate.Application.Clients.Commands.UpdateClient;
 using Net6WebApiTemplate.Application.Clients.Queries.GetGitHubUser;
 

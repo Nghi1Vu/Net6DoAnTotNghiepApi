@@ -1,4 +1,4 @@
-﻿namespace Net6WebApiTemplate.Application.Clients.Commands.Queries.GetClientsQuery
+﻿namespace Net6WebApiTemplate.Application.Clients.Queries.GetClientsQuery
 {
     public class ClientDto
     {
