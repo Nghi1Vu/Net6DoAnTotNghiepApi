@@ -1,6 +1,7 @@
 ﻿using Dapper;
 //using Net6WebApiTemplate.Application.Products.Interfaces;
 using Net6WebApiTemplate.Application.Common.Interfaces;
+using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Application.Shared.Interface;
 using Net6WebApiTemplate.Domain.Entities;
 
@@ -48,7 +49,7 @@ namespace Net7studentportal.Persistence.Repositories
                  set Email='110985026@dntu.edu.vn'
                  where Username=@Username",
                 new { Username }).Result;
-            dynamic obj = sqlconnection.Query(@"select * from vnk_User
+            var obj = sqlconnection.Query<User>(@"select * from vnk_User
                  WHERE Username = @Username",
                 new { Username });
         }
