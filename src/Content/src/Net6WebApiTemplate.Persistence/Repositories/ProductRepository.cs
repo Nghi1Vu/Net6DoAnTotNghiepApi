@@ -40,18 +40,28 @@ namespace Net7studentportal.Persistence.Repositories
 
         //    return entity.FirstOrDefault();
         //}
-
-        public async Task Update(string Username)
+        public bool SignIn(string Username, string Password)
         {
+            var objHash = new { Username, Password };
+            string hash = objHash.GetHashCode().ToString();
             using var sqlconnection = _connectionFactory.CreateConnection();
-            var rowNum =sqlconnection.ExecuteAsync(
-                @"update vnk_User
-                 set Email='110985026@dntu.edu.vn'
-                 where Username=@Username",
-                new { Username }).Result;
+            //var rowNum =sqlconnection.ExecuteAsync(
+            //    @"update vnk_User
+            //     set Email='110985026@dntu.edu.vn'
+            //     where Username=@Username",
+            //    new { Username }).Result;
             var obj = sqlconnection.Query<User>(@"select * from vnk_User
-                 WHERE Username = @Username",
-                new { Username });
+                 WHERE Password = @Password",
+                new { @Password= hash });
+            if(obj != null && obj.Count()>0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
         }
     }
 }

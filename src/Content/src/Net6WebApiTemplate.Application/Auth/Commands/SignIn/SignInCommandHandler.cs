@@ -19,11 +19,20 @@ namespace Net6WebApiTemplate.Application.Auth.Commands.SignIn
 
         public async Task<AuthResult> Handle(SignInCommand request, CancellationToken cancellationToken)
         {
+            AuthResult response = new AuthResult();
             // validate username & password 
             //var result = await _signInManager.PasswordSignInAsync(request.Username, request.Password, false, false);
             try
             {
-                await _productRepository.Update(request.Username);
+                bool checkLogin= _productRepository.SignIn(request.Username, request.Password);
+                if (checkLogin)
+                {
+                    response.ExpiresIn = 1;
+                }
+                else
+                {
+                    response.ExpiresIn = 0;
+                }
             }
             catch
             {
@@ -34,10 +43,8 @@ namespace Net6WebApiTemplate.Application.Auth.Commands.SignIn
             //{
             //    throw new UnauthorizedException("Invalid username or password.");
             //}
-            AuthResult response = new AuthResult();
             // Generate JWT token response if validation successful
             //AuthResult response = await _jwtTokenManager.GenerateClaimsTokenAsync(request.Username, cancellationToken);
-
             return response;
         }
     }
