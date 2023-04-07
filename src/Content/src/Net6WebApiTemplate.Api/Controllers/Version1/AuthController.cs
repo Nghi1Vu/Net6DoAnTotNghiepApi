@@ -40,5 +40,18 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             var response = await _mediator.Send(command);
             return Ok(response);
         }
+        [HttpPost]
+        [Route(ApiRoutes.Auth.LoginWithEmail)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> LoginWithEmail(LoginWithEmailRequest request)
+        {
+            var command = new LoginWithEmailCommand
+            {
+                email = request.email.ToLower().Trim()
+            };
+
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
     }
 }

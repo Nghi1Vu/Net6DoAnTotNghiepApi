@@ -63,5 +63,21 @@ namespace Net7studentportal.Persistence.Repositories
             }
             
         }
+        public bool LoginWithEmail(string email)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            var obj = sqlconnection.Query<User>(@"select * from vnk_User
+                 WHERE email = @email",
+                new { email = email });
+            if (obj != null && obj.Count() > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
     }
 }

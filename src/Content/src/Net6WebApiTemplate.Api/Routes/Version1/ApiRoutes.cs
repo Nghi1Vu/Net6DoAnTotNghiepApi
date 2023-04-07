@@ -9,6 +9,7 @@
         public static class Auth
         {
             public const string SignIn = Base + "/signin";
+            public const string LoginWithEmail = Base + "/LoginWithEmail";
         }
 
         public static class Client

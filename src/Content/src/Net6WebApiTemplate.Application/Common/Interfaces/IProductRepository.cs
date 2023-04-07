@@ -6,5 +6,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
     {
         //Task<Product?> GetById(long id);
         bool SignIn(string Username, string Password);
+        bool LoginWithEmail(string email);
     }
 }
