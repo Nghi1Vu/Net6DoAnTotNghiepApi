@@ -53,5 +53,12 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             var response = await _mediator.Send(command);
             return Ok(response);
         }
+        [HttpGet]
+        [Route(ApiRoutes.Auth.GetIndex)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetIndex()
+        {
+            return Content("Hello");
+        }
     }
 }

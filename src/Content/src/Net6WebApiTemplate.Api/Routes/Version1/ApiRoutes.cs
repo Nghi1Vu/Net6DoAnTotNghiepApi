@@ -10,6 +10,7 @@
         {
             public const string SignIn = Base + "/signin";
             public const string LoginWithEmail = Base + "/LoginWithEmail";
+            public const string GetIndex = Base + "/GetIndex";
         }
 
         public static class Client
