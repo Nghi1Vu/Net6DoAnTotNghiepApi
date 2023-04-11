@@ -135,5 +135,19 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(results);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetNews")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetNews()
+        {
+            var query = new NewsCommand()
+            {
+               
+            };
+            var rsNews= await _mediator.Send(query);
+
+            return Ok(rsNews);
+        }
     }
 }

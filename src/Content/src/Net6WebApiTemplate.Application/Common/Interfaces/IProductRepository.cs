@@ -1,4 +1,5 @@
-﻿using Net6WebApiTemplate.Domain.Entities;
+﻿using Net6WebApiTemplate.Application.Products.Dto;
+using Net6WebApiTemplate.Domain.Entities;
 
 namespace Net6WebApiTemplate.Application.Common.Interfaces
 {
@@ -7,5 +8,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         //Task<Product?> GetById(long id);
         bool SignIn(string Username, string Password);
         bool LoginWithEmail(string email);
+        List<News> GetNews();
     }
 }

@@ -79,5 +79,20 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
+        public List<News> GetNews()
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<News> obj = sqlconnection.Query<News>(@"select * from vnk_News",
+                new { }).ToList();
+            if (obj != null && obj.Count() > 0)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<News>();
+            }
+
+        }
     }
 }
