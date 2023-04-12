@@ -82,7 +82,7 @@ namespace Net7studentportal.Persistence.Repositories
         public List<News> GetNews()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<News> obj = sqlconnection.Query<News>(@"select * from vnk_News",
+            List<News> obj = sqlconnection.Query<News>(@"select * from vnk_News where channelID=40 and statusID=1",
                 new { }).ToList();
             if (obj != null && obj.Count() > 0)
             {
