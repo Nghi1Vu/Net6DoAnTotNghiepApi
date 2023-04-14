@@ -97,7 +97,7 @@ namespace Net7studentportal.Persistence.Repositories
         public List<StudenClass> GetStudentClass()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<StudenClass> obj = sqlconnection.Query<StudenClass>(@"select (Lastname+' '+Firstname) Username from ClassUser cr join vnk_User vr on cr.UserID=vr.UserID and cr.ClassID=803",
+            List<StudenClass> obj = sqlconnection.Query<StudenClass>(@"select Usercode, (Lastname+' '+Firstname) Username, Address, Phone,Email from ClassUser cr join vnk_User vr on cr.UserID=vr.UserID and cr.ClassID=803 order by Firstname",
                 new { }).ToList();
             if (obj != null && obj.Count() > 0)
             {
