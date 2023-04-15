@@ -94,6 +94,21 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
+        public News GetNewsDetail(int NewsId)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            News obj = sqlconnection.Query<News>(@"select * from vnk_News where channelID=40 and statusID=1 and NewsID=@NewsId",
+                new { @NewsId= NewsId }).FirstOrDefault();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new News();
+            }
+
+        }
         public List<StudenClass> GetStudentClass()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();

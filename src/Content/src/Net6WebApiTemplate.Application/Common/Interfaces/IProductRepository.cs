@@ -10,5 +10,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         bool LoginWithEmail(string email);
         List<News> GetNews();
         List<StudenClass> GetStudentClass();
+        News GetNewsDetail(int NewsId);
     }
 }
