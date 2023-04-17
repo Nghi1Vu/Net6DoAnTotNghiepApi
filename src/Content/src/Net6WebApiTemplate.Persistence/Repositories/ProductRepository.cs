@@ -124,5 +124,20 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
+        public List<StudentInfo> GetStudentInfo()
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<StudentInfo> obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,(select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname from vnk_User vr",
+                new { }).ToList();
+            if (obj != null && obj.Count() > 0)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<StudentInfo>();
+            }
+
+        }
     }
 }
