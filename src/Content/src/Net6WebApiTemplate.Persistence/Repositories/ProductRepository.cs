@@ -127,7 +127,12 @@ namespace Net7studentportal.Persistence.Repositories
         public List<StudentInfo> GetStudentInfo()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<StudentInfo> obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,(select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname from vnk_User vr",
+            List<StudentInfo> obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
+(select (Lastname+' '+Firstname) Fullname from vnk_User where UserId=(select UserId from [ClassTeacher] where ClassID = (select ClassID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) TeacherName,
+(select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname,
+(select IndustryName FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) as IndustryName,
+(select DepartmentName from vnk_Department where DepartmentId= (select DepartmentId FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID))))) as DepartmentName
+from vnk_User vr",
                 new { }).ToList();
             if (obj != null && obj.Count() > 0)
             {
