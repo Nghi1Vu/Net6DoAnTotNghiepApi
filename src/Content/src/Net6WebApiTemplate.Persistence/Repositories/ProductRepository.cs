@@ -52,8 +52,8 @@ namespace Net7studentportal.Persistence.Repositories
             //    new { Username }).Result;
             var obj = sqlconnection.Query<User>(@"select * from vnk_User
                  WHERE Password = @Password",
-                new { @Password= hash });
-            if(obj != null && obj.Count()>0)
+                new { @Password = hash });
+            if (obj != null && obj.Count() > 0)
             {
                 return true;
             }
@@ -61,7 +61,7 @@ namespace Net7studentportal.Persistence.Repositories
             {
                 return false;
             }
-            
+
         }
         public bool LoginWithEmail(string email)
         {
@@ -98,7 +98,7 @@ namespace Net7studentportal.Persistence.Repositories
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             News obj = sqlconnection.Query<News>(@"select * from vnk_News where channelID=40 and statusID=1 and NewsID=@NewsId",
-                new { @NewsId= NewsId }).FirstOrDefault();
+                new { @NewsId = NewsId }).FirstOrDefault();
             if (obj != null)
             {
                 return obj;
@@ -124,23 +124,29 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
-        public List<StudentInfo> GetStudentInfo()
+        public StudentInfo GetStudentInfo(string Username, string Password, string email)
         {
+            string hash = "";
+            if (Username != "" && Password != "")
+            {
+                var objHash = new { Username, Password };
+                hash = objHash.GetHashCode().ToString();
+            }
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<StudentInfo> obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
 (select (Lastname+' '+Firstname) Fullname from vnk_User where UserId=(select UserId from [ClassTeacher] where ClassID = (select ClassID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) TeacherName,
 (select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname,
 (select IndustryName FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) as IndustryName,
 (select DepartmentName from vnk_Department where DepartmentId= (select DepartmentId FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID))))) as DepartmentName
-from vnk_User vr",
-                new { }).ToList();
-            if (obj != null && obj.Count() > 0)
+from vnk_User vr where (Username=@Username and Password=@Password) or email=@email",
+                new { @Username = Username, @Password = hash, @email = email }).FirstOrDefault();
+            if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<StudentInfo>();
+                return new StudentInfo();
             }
 
         }

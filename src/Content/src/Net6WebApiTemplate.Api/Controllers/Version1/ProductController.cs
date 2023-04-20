@@ -181,11 +181,13 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [Route("/api/v{version:apiVersion}/GetStudentInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetStudentInfo()
+        public async Task<IActionResult> GetStudentInfo(string Username, string Password, string email)
         {
             var query = new GetStudentInfoCommand()
             {
-
+                Username= Username,
+                Password=Password,
+                email=email
             };
             var rsInfo = await _mediator.Send(query);
 

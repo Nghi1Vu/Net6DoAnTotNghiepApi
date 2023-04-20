@@ -11,6 +11,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<News> GetNews();
         List<StudenClass> GetStudentClass();
         News GetNewsDetail(int NewsId);
-        List<StudentInfo> GetStudentInfo();
+        StudentInfo GetStudentInfo(string Username, string Password, string email);
     }
 }
