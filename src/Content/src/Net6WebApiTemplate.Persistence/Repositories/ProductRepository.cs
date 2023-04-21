@@ -133,12 +133,13 @@ namespace Net7studentportal.Persistence.Repositories
                 hash = objHash.GetHashCode().ToString();
             }
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
+                StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
 (select (Lastname+' '+Firstname) Fullname from vnk_User where UserId=(select UserId from [ClassTeacher] where ClassID = (select ClassID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) TeacherName,
 (select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname,
 (select IndustryName FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) as IndustryName,
 (select DepartmentName from vnk_Department where DepartmentId= (select DepartmentId FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID))))) as DepartmentName,
-(select TBCTL from UserMark where UserID=vr.UserId) as TBCTL
+(select TBCTL from UserMark where UserID=vr.UserId) as TBCTL,
+Email, Phone, Address, Images
 from vnk_User vr where (Username=@Username and Password=@Password) or email=@email",
                 new { @Username = Username, @Password = hash, @email = email }).FirstOrDefault();
             if (obj != null)
@@ -156,17 +157,54 @@ from vnk_User vr where (Username=@Username and Password=@Password) or email=@ema
             using var sqlconnection = _connectionFactory.CreateConnection();
             StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vi.School, vi.BirthPlace, vi.CMND, iif(vi.Gender=1,'Nữ','Nam') as Gender, vo.ReligionName,
 vt.DistrictName, va.DistrictSocialName, ve.ProvinceName, vn.NationName, vh.EthnicName, vi.NumberOfHousing,
-vm.HomeComponentName, vi.DOB, vj.ObjectName, vi.BHYT
+vm.HomeComponentName, vi.DOB, vj.ObjectName, vi.BHYT, vs.ExemptionsName
 from vnk_User vr join vnk_UserDetail vi on vr.UserID=vi.UserID and vr.UserID=@UserId 
-join vnk_Religion vo on vo.ReligionID=vi.ReligionID 
-join vnk_District vt on vt.DistrictID= vi.DistrictID 
-join vnk_DistrictSocial va on va.DistrictSocialID= vi.DistrictSocialID 
-join vnk_Province ve on ve.ProvinceID = vi.ProvinceID 
-join vnk_Nation vn on vn.NationID= vi.NationID 
-join vnk_Ethnic vh on vh.EthnicID= vi.EthnicID  
-join vnk_HomeComponent vm on vm.HomeComponentID= vi.HomeComponentID
-join vnk_Object vj on vj.ObjectID= vi.Object",
+left join vnk_Religion vo on vo.ReligionID=vi.ReligionID 
+left join vnk_District vt on vt.DistrictID= vi.DistrictID 
+left join vnk_DistrictSocial va on va.DistrictSocialID= vi.DistrictSocialID 
+left join vnk_Province ve on ve.ProvinceID = vi.ProvinceID 
+left join vnk_Nation vn on vn.NationID= vi.NationID 
+left join vnk_Ethnic vh on vh.EthnicID= vi.EthnicID  
+left join vnk_HomeComponent vm on vm.HomeComponentID= vi.HomeComponentID
+left join vnk_Object vj on vj.ObjectID= vi.Object
+left join vnk_ExemptionsUser vx on vx.UserID=vr.UserID
+left join vnk_Exemptions vs on vs.ExemptionsID= vx.ExemptionsID",
                 new { UserId= UserId }).FirstOrDefault();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new StudentInfo();
+            }
+
+        }
+        public StudentInfo GetFamilyDetail(int UserId)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select MotherName, MotherAge, MotherPhone1, MotherJob,
+FatherName, FatherAge, FatherPhone1, FatherJob, HomePhoneContact,
+HomePhone, IsAddressPhone, ContactEmail, Siblings
+from vnk_UserDetail where UserId=@UserId",
+                new { UserId = UserId }).FirstOrDefault();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new StudentInfo();
+            }
+
+        }
+        public StudentInfo GetRLSemester(int UserId)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select SemesterID, SumScoreStudent, SumScoreTeacher, StatusID from RLUserSemester where UserID=@UserId   
+order by SemesterID ASC
+",
+                new { UserId = UserId }).FirstOrDefault();
             if (obj != null)
             {
                 return obj;
