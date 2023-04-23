@@ -215,5 +215,20 @@ order by SemesterID ASC
             }
 
         }
+        public StudentInfo GetRLForm(int UserId)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select rn.Title, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
+                new { UserId = UserId }).FirstOrDefault();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new StudentInfo();
+            }
+
+        }
     }
 }
