@@ -177,17 +177,77 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(rsNews);
         }
-        [HttpGet]
+        [HttpPost]
         [Route("/api/v{version:apiVersion}/GetStudentInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetStudentInfo(string Username, string Password, string email)
+        public async Task<IActionResult> GetStudentInfo(GetStudentInfoCommand query)
         {
-            var query = new GetStudentInfoCommand()
+            var rsInfo = await _mediator.Send(query);
+
+            return Ok(rsInfo);
+        }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/GetStudentInfoByEmail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetStudentInfoByEmail(GetStudentInfoByEmailCommand query)
+        {
+            var rsInfo = await _mediator.Send(query);
+
+            return Ok(rsInfo);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetStudentDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetStudentDetail(int UserId)
+        {
+            var query = new GetStudentDetailCommand()
             {
-                Username= Username,
-                Password=Password,
-                email=email
+                UserId = UserId,
+            };
+            var rsInfo = await _mediator.Send(query);
+
+            return Ok(rsInfo);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetFamilyDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetFamilyDetail(int UserId)
+        {
+            var query = new GetFamilyDetailCommand()
+            {
+                UserId = UserId,
+            };
+            var rsInfo = await _mediator.Send(query);
+
+            return Ok(rsInfo);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetRLSemester")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetRLSemester(int UserId)
+        {
+            var query = new GetRLSemesterCommand()
+            {
+                UserId = UserId,
+            };
+            var rsInfo = await _mediator.Send(query);
+
+            return Ok(rsInfo);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetRLForm")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetRLForm(int UserId)
+        {
+            var query = new GetRLFormCommand()
+            {
+                UserId = UserId,
             };
             var rsInfo = await _mediator.Send(query);
 

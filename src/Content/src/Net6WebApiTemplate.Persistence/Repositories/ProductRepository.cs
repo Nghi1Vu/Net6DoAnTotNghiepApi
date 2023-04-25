@@ -124,26 +124,26 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
-        public StudentInfo GetStudentInfo(string Username, string Password, string email)
+        public StudentInfo GetStudentInfo(string Username, string Password)
         {
             string hash = "";
-            if (Username != "" && Password != "")
-            {
-                var objHash = new { Username, Password };
-                hash = objHash.GetHashCode().ToString();
-            }
+
+            var objHash = new { Username, Password };
+            hash = objHash.GetHashCode().ToString();
+
             using var sqlconnection = _connectionFactory.CreateConnection();
-                StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select (Lastname+' '+Firstname) Fullname, Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select UserId,(Lastname+' '+Firstname) Fullname, Usercode,
 (select (Lastname+' '+Firstname) Fullname from vnk_User where UserId=(select UserId from [ClassTeacher] where ClassID = (select ClassID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) TeacherName,
 (select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname,
 (select IndustryName FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) as IndustryName,
 (select DepartmentName from vnk_Department where DepartmentId= (select DepartmentId FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID))))) as DepartmentName,
 (select TBCTL from UserMark where UserID=vr.UserId) as TBCTL,
 Email, Phone, Address, Images
-from vnk_User vr where (Username=@Username and Password=@Password) or email=@email",
-                new { @Username = Username, @Password = hash, @email = email }).FirstOrDefault();
+from vnk_User vr where Username=@Username and Password=@Password",
+            new { @Username = Username, @Password = hash }).FirstOrDefault();
             if (obj != null)
             {
+                StudentInfo a = new StudentInfo();
                 return obj;
             }
             else
@@ -152,10 +152,33 @@ from vnk_User vr where (Username=@Username and Password=@Password) or email=@ema
             }
 
         }
-        public StudentInfo GetStudentDetail(int UserId)
+        public StudentInfo GetStudentInfoByEmail(string email)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vi.School, vi.BirthPlace, vi.CMND, iif(vi.Gender=1,'Nữ','Nam') as Gender, vo.ReligionName,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select UserId, (Lastname+' '+Firstname) Fullname, Usercode,
+(select (Lastname+' '+Firstname) Fullname from vnk_User where UserId=(select UserId from [ClassTeacher] where ClassID = (select ClassID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) TeacherName,
+(select ClassName from Class where ClassID= (select ClassID from ClassUser where UserID=vr.UserID)) Classname,
+(select IndustryName FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID)))) as IndustryName,
+(select DepartmentName from vnk_Department where DepartmentId= (select DepartmentId FROM Industry where IndustryID= (select IndustryID from [CourseIndustry] where CourseIndustryID= (select CourseIndustryID from Class where ClassID=(select ClassID from ClassUser where UserID=vr.UserID))))) as DepartmentName,
+(select TBCTL from UserMark where UserID=vr.UserId) as TBCTL,
+Email, Phone, Address, Images
+from vnk_User vr where email=@email",
+            new { @email = email }).FirstOrDefault();
+            if (obj != null)
+            {
+                StudentInfo a = new StudentInfo();
+                return obj;
+            }
+            else
+            {
+                return new StudentInfo();
+            }
+
+        }
+        public StudentDetail GetStudentDetail(int UserId)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            StudentDetail obj = sqlconnection.Query<StudentDetail>(@"select vi.School, vi.BirthPlace, vi.CMND, iif(vi.Gender=1,'Nữ','Nam') as Gender, vo.ReligionName,
 vt.DistrictName, va.DistrictSocialName, ve.ProvinceName, vn.NationName, vh.EthnicName, vi.NumberOfHousing,
 vm.HomeComponentName, vi.DOB, vj.ObjectName, vi.BHYT, vs.ExemptionsName
 from vnk_User vr join vnk_UserDetail vi on vr.UserID=vi.UserID and vr.UserID=@UserId 
@@ -169,21 +192,21 @@ left join vnk_HomeComponent vm on vm.HomeComponentID= vi.HomeComponentID
 left join vnk_Object vj on vj.ObjectID= vi.Object
 left join vnk_ExemptionsUser vx on vx.UserID=vr.UserID
 left join vnk_Exemptions vs on vs.ExemptionsID= vx.ExemptionsID",
-                new { UserId= UserId }).FirstOrDefault();
+                new { UserId = UserId }).FirstOrDefault();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new StudentInfo();
+                return new StudentDetail();
             }
 
         }
-        public StudentInfo GetFamilyDetail(int UserId)
+        public FamilyDetail GetFamilyDetail(int UserId)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select MotherName, MotherAge, MotherPhone1, MotherJob,
+            FamilyDetail obj = sqlconnection.Query<FamilyDetail>(@"select MotherName, MotherAge, MotherPhone1, MotherJob,
 FatherName, FatherAge, FatherPhone1, FatherJob, HomePhoneContact,
 HomePhone, IsAddressPhone, ContactEmail, Siblings
 from vnk_UserDetail where UserId=@UserId",
@@ -194,14 +217,14 @@ from vnk_UserDetail where UserId=@UserId",
             }
             else
             {
-                return new StudentInfo();
+                return new FamilyDetail();
             }
 
         }
-        public StudentInfo GetRLSemester(int UserId)
+        public RLSemester GetRLSemester(int UserId)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select SemesterID, SumScoreStudent, SumScoreTeacher, StatusID from RLUserSemester where UserID=@UserId   
+            RLSemester obj = sqlconnection.Query<RLSemester>(@"select SemesterID, SumScoreStudent, SumScoreTeacher, StatusID from RLUserSemester where UserID=@UserId   
 order by SemesterID ASC
 ",
                 new { UserId = UserId }).FirstOrDefault();
@@ -211,14 +234,14 @@ order by SemesterID ASC
             }
             else
             {
-                return new StudentInfo();
+                return new RLSemester();
             }
 
         }
-        public StudentInfo GetRLForm(int UserId)
+        public RLForm GetRLForm(int UserId)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select rn.Title, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
+            RLForm obj = sqlconnection.Query<RLForm>(@"select rn.Title as BigTitle, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
                 new { UserId = UserId }).FirstOrDefault();
             if (obj != null)
             {
@@ -226,7 +249,7 @@ order by SemesterID ASC
             }
             else
             {
-                return new StudentInfo();
+                return new RLForm();
             }
 
         }
