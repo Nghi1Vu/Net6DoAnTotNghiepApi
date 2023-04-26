@@ -5,6 +5,7 @@ namespace Net6WebApiTemplate.Application.Products.Dto
     public class StudentDetail
     {
         public string School { get; set; }
+        public string ObjectName { get; set; }
         public string BirthPlace { get; set; }
         public string CMND { get; set; }
         public string Gender { get; set; }
