@@ -221,35 +221,35 @@ from vnk_UserDetail where UserId=@UserId",
             }
 
         }
-        public RLSemester GetRLSemester(int UserId)
+        public List<RLSemester> GetRLSemester(int UserId)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            RLSemester obj = sqlconnection.Query<RLSemester>(@"select SemesterID, SumScoreStudent, SumScoreTeacher, StatusID from RLUserSemester where UserID=@UserId   
+            List<RLSemester> obj = sqlconnection.Query<RLSemester>(@"select SemesterID, SumScoreStudent, SumScoreTeacher, StatusID from RLUserSemester where UserID=@UserId   
 order by SemesterID ASC
 ",
-                new { UserId = UserId }).FirstOrDefault();
+                new { UserId = UserId }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new RLSemester();
+                return new List<RLSemester>();
             }
 
         }
-        public RLForm GetRLForm(int UserId)
+        public List<RLForm> GetRLForm(int UserId)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            RLForm obj = sqlconnection.Query<RLForm>(@"select rn.Title as BigTitle, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
-                new { UserId = UserId }).FirstOrDefault();
+            List<RLForm> obj = sqlconnection.Query<RLForm>(@"select rn.Title as BigTitle, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
+                new { UserId = UserId }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new RLForm();
+                return new List<RLForm>();
             }
 
         }

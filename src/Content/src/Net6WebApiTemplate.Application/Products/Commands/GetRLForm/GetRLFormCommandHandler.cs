@@ -5,7 +5,7 @@ using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Domain.Entities;
 namespace Net6WebApiTemplate.Application.Products.Commands.CreateProduct;
 
-public class GetRLFormCommandHandler : IRequestHandler<GetRLFormCommand, RLForm>
+public class GetRLFormCommandHandler : IRequestHandler<GetRLFormCommand, List<RLForm>>
 {
     private readonly IMediator _mediator;
     private readonly INet6WebApiTemplateDbContext _dbContext;
@@ -17,11 +17,11 @@ public class GetRLFormCommandHandler : IRequestHandler<GetRLFormCommand, RLForm>
         _productRepository = productRepository;
     }
 
-    public async Task<RLForm> Handle(GetRLFormCommand request, CancellationToken cancellationToken)
+    public async Task<List<RLForm>> Handle(GetRLFormCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            RLForm studentInfos = _productRepository.GetRLForm(request.UserId);
+            List<RLForm> studentInfos = _productRepository.GetRLForm(request.UserId);
             return studentInfos;
         }
         catch

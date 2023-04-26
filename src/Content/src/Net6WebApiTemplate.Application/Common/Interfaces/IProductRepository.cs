@@ -15,7 +15,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         StudentInfo GetStudentInfoByEmail(string email);
         StudentDetail GetStudentDetail(int UserId);
         FamilyDetail GetFamilyDetail(int UserId);
-        RLSemester GetRLSemester(int UserId);
-        RLForm GetRLForm(int UserId);
+        List<RLSemester> GetRLSemester(int UserId);
+        List<RLForm> GetRLForm(int UserId);
     }
 }

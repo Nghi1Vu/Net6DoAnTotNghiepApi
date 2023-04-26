@@ -5,7 +5,7 @@ using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Domain.Entities;
 namespace Net6WebApiTemplate.Application.Products.Commands.CreateProduct;
 
-public class GetRLSemesterCommandHandler : IRequestHandler<GetRLSemesterCommand, RLSemester>
+public class GetRLSemesterCommandHandler : IRequestHandler<GetRLSemesterCommand, List<RLSemester>>
 {
     private readonly IMediator _mediator;
     private readonly INet6WebApiTemplateDbContext _dbContext;
@@ -17,11 +17,11 @@ public class GetRLSemesterCommandHandler : IRequestHandler<GetRLSemesterCommand,
         _productRepository = productRepository;
     }
 
-    public async Task<RLSemester> Handle(GetRLSemesterCommand request, CancellationToken cancellationToken)
+    public async Task<List<RLSemester>> Handle(GetRLSemesterCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            RLSemester studentInfos = _productRepository.GetRLSemester(request.UserId);
+            List<RLSemester> studentInfos = _productRepository.GetRLSemester(request.UserId);
             return studentInfos;
         }
         catch
