@@ -5,6 +5,7 @@ using Net6WebApiTemplate.Api.Routes.Version1;
 using Net6WebApiTemplate.Application.Products.Commands.CreateProduct;
 using Net6WebApiTemplate.Application.Products.Commands.DeleteProduct;
 using Net6WebApiTemplate.Application.Products.Commands.PatchProduct;
+using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Application.Products.NQueries.GetProductById;
 using Net6WebApiTemplate.Application.Products.NQueries.GetProducts;
 
@@ -243,15 +244,29 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [Route("/api/v{version:apiVersion}/GetRLForm")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetRLForm(int UserId)
+        public async Task<IActionResult> GetRLForm()
         {
             var query = new GetRLFormCommand()
             {
-                UserId = UserId,
+            
             };
             var rsInfo = await _mediator.Send(query);
 
             return Ok(rsInfo);
+        }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/PostRLForm")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> PostRLForm(List<PostRLForm> model)
+        {
+            var query = new PostRLFormCommand()
+            {
+                model= model
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
         }
     }
 }

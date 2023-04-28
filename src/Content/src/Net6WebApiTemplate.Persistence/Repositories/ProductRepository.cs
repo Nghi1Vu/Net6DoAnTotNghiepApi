@@ -238,11 +238,11 @@ order by SemesterID ASC
             }
 
         }
-        public List<RLForm> GetRLForm(int UserId)
+        public List<RLForm> GetRLForm()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<RLForm> obj = sqlconnection.Query<RLForm>(@"select rn.Title as BigTitle, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
-                new { UserId = UserId }).ToList();
+            List<RLForm> obj = sqlconnection.Query<RLForm>(@"select rn.RLQuestionID, rn.Title as BigTitle, rr.Title, rr.MaxScore, rr.RLAnswerID from RLQuestion rn join RLAnswer rr on rn.RLQuestionID= rr.RLQuestionID",
+                new { }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -252,6 +252,48 @@ order by SemesterID ASC
                 return new List<RLForm>();
             }
 
+        }
+        public int PostRLForm(List<PostRLForm> model)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
+            var trans = sqlconnection.BeginTransaction();
+            int obj = 0;
+            int count = 0;
+            foreach (var item in model)
+            {
+               
+                if (obj == 4)
+                {
+                    count = sqlconnection.Execute(@"if not exists(select * from RLUser where UserID=@UserId and SemesterID=@SemesterID and RLAnswerID=@RLAnswerID)
+insert into RLUser ( UserID, RLAnswerID,Score,SemesterID) values(@UserID,@RLAnswerID,@Score,@SemesterID)
+else
+update RLUser set Score=@Score where UserID=1 and RLAnswerID=@RLAnswerID AND SemesterID=@SemesterID ",
+               new { UserId = item.UserId, SemesterID = item.SemesterID, RLAnswerID = item.RLAnswerID, Score = item.Score }, trans);
+                }
+                else
+                {
+                    count = sqlconnection.Execute(@"if not exists(select * from RLUser where UserID=@UserId and SemesterID=@SemesterID and RLAnswerID=@RLAnswerID)
+insert into RLUser ( UserID, RLAnswerID,Score,SemesterID) values(@UserID,@RLAnswerID,@Score,@SemesterID)
+else
+update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID AND SemesterID=@SemesterID ",
+               new { UserId = item.UserId, SemesterID = item.SemesterID, RLAnswerID = item.RLAnswerID, Score = item.Score }, trans);
+                }
+                if (count > 0)
+                {
+                    obj++;
+                }
+            }
+            if (obj == model.Count)
+            {
+                trans.Commit();
+                return 1;
+            }
+            else
+            {
+                trans.Rollback();
+                return 0;
+            }
         }
     }
 }

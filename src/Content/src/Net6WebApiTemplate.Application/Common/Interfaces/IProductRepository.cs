@@ -1,4 +1,5 @@
-﻿using Net6WebApiTemplate.Application.Products.Dto;
+﻿using Net6WebApiTemplate.Application.Products.Commands.CreateProduct;
+using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Domain.Entities;
 
 namespace Net6WebApiTemplate.Application.Common.Interfaces
@@ -16,6 +17,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         StudentDetail GetStudentDetail(int UserId);
         FamilyDetail GetFamilyDetail(int UserId);
         List<RLSemester> GetRLSemester(int UserId);
-        List<RLForm> GetRLForm(int UserId);
+        List<RLForm> GetRLForm();
+        int PostRLForm(List<PostRLForm> model);
     }
 }
