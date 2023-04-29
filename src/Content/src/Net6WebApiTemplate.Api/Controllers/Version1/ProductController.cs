@@ -258,7 +258,7 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [Route("/api/v{version:apiVersion}/PostRLForm")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PostRLForm(List<PostRLForm> model)
+        public async Task<IActionResult> PostRLForm(PostRLForm model)
         {
             var query = new PostRLFormCommand()
             {

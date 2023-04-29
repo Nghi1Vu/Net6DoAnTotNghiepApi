@@ -18,6 +18,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         FamilyDetail GetFamilyDetail(int UserId);
         List<RLSemester> GetRLSemester(int UserId);
         List<RLForm> GetRLForm();
-        int PostRLForm(List<PostRLForm> model);
+        int PostRLForm(PostRLForm model);
     }
 }
