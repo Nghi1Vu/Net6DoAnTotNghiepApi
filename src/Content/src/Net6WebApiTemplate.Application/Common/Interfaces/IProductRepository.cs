@@ -19,5 +19,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<RLSemester> GetRLSemester(int UserId);
         List<RLForm> GetRLForm();
         int PostRLForm(PostRLForm model);
+        List<ModuleDkhp> GetModuleDkhp();
     }
 }
