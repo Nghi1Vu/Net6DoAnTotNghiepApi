@@ -286,8 +286,14 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
         public List<ModuleDkhp> GetModuleDkhp()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDkhp> obj = sqlconnection.Query<ModuleDkhp>(@"select ('HP'+ cast(md.ModulesID as varchar(10))) as HPModules, md.ModulesName,md.CreditsLT,md.CreditsLT, md.Credits from vnk_Modules md 
-",
+            List<ModuleDkhp> obj = sqlconnection.Query<ModuleDkhp>(@"select COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
+join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
+left join ProgramGroup pg on pg.ProgramID = p.ProgramID
+join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
+left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
+join Semester s on s.SemesterID=pm.Semester
+where pm.Semester = 2
+group by md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID",
                 new { }).ToList();
             //List<RLForm> obj = sqlconnection.Query<RLForm>(@"select ('HP'+ cast(md.ModulesID as varchar(10))) as HPModules, md.ModulesName,md.CreditsLT,md.CreditsLT, md.Credits,* from vnk_Modules md 
             //left join vnk_ModulesGroupJoin gj on md.ModulesID= gj.ModulesID
@@ -304,15 +310,6 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
             //join Industry i on i.IndustryID = ci.IndustryID
             //join CourseIndustrySemester cis on cis.CourseIndustryID = ci.CourseIndustryID and cis.TypeID = 0
             //join Semester s on s.SemesterID = cis.SemesterID
-
-            //-----------------------------------//
-
-//            select md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, pm.Semester from vnk_Modules md
-//join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
-//left join ProgramGroup pg on pg.ProgramID = p.ProgramID
-//join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
-//join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
-//where pm.Semester = 4
 
             if (obj != null)
             {
