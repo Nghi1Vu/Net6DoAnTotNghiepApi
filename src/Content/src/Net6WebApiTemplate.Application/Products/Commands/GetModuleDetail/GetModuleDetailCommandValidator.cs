@@ -4,11 +4,11 @@ using Net6WebApiTemplate.Application.Products.Dto;
 
 namespace Net6WebApiTemplate.Application.Products.Commands.CreateProduct
 {
-    public class GetModuleDkhpCommandValidator : AbstractValidator<StudentInfo>
+    public class GetModuleDetailCommandValidator : AbstractValidator<StudentInfo>
     {
         private readonly IStringLocalizer<Messages> _localizer;
 
-        public GetModuleDkhpCommandValidator(IStringLocalizer<Messages> localizer)
+        public GetModuleDetailCommandValidator(IStringLocalizer<Messages> localizer)
         {
             _localizer = localizer;
 

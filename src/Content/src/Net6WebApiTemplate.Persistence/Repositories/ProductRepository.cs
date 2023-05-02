@@ -283,10 +283,10 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                 return 0;
             }
         }
-        public List<ModuleDkhp> GetModuleDkhp()
+        public List<ProgramSemester> GetProgramSemester()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDkhp> obj = sqlconnection.Query<ModuleDkhp>(@"select COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
+            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
 join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
 left join ProgramGroup pg on pg.ProgramID = p.ProgramID
 join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
@@ -317,9 +317,33 @@ group by md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.C
             }
             else
             {
-                return new List<ModuleDkhp>();
+                return new List<ProgramSemester>();
             }
 
+        }
+        public List<ModuleDetail> GetModuleDetail(int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select d.DepartmentName,('HP'+CAST(m.ModulesID as varchar(10)))as HPModules,
+ModulesName,ModulesNameSort,ModulesCode,md.Descriptions,m.Credits,
+md.Purposely,md.PurposelyKN,md.PurposelyYT,ms.ChapterName,ms.ContentChapter,
+ms.TimesST,ms.TimesLT,ms.TimesBT,ms.TimesTL,ms.TimesTH,ms.TimesK,ms.TimesTest,
+md.[References],tl.TranningLevelName,m.NumberStPerClass,et.ExamTypeName, et.ExamRateTL,
+et.ExamRateTN, et.ExamRateK from vnk_Modules m
+join ModulesDetail md on md.ModulesID= m.ModulesID and m.ModulesID=39
+join ModulesStruct ms on ms.ModulesID=m.ModulesID
+join Department d on d.DepartmentID=m.DepartmentID
+join TranningLevel tl on  tl.TranningLevelID=m.TranningLevelID
+join vnk_ExamType et on et.ExamTypeID=m.ExamTypeID",
+                new { }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
         }
     }
 }

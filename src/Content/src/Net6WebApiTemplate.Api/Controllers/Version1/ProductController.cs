@@ -269,14 +269,28 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             return Ok(result);
         }
         [HttpGet]
-        [Route("/api/v{version:apiVersion}/GetModuleDkhp")]
+        [Route("/api/v{version:apiVersion}/GetProgramSemester")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetModuleDkhp()
+        public async Task<IActionResult> GetProgramSemester()
         {
-            var query = new GetModuleDkhpCommand()
+            var query = new GetProgramSemesterCommand()
             {
 
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetModuleDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetModuleDetail(int ModulesID)
+        {
+            var query = new GetModuleDetailCommand()
+            {
+                ModulesID= ModulesID
             };
             var result = await _mediator.Send(query);
 
