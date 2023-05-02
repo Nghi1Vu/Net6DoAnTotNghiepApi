@@ -345,5 +345,29 @@ join vnk_ExamType et on et.ExamTypeID=m.ExamTypeID",
                 return new List<ModuleDetail>();
             }
         }
+        public List<ModuleDetail> GetProgram()
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select (select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise),(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore), md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
+join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
+left join ProgramGroup pg on pg.ProgramID = p.ProgramID
+join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
+left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
+join Semester s on s.SemesterID=pm.Semester
+join ModulesType mt on mt.TypeID=md.ModulesTypeID
+left join ModulesBefore mb on mb.ModulesID=md.ModulesID and isnull(mb.Del,0)=0
+left join ModulesPremise mp on mp.ModulesID=md.ModulesID and isnull(mp.Del,0)=0
+group by mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID
+",
+                new { }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
     }
 }
