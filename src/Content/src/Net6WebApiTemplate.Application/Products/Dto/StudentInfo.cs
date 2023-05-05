@@ -5,11 +5,15 @@ namespace Net6WebApiTemplate.Application.Products.Dto
     public class StudentInfo
     {
         public int UserId { get; set; }
+        public int CourseIndustryID { get; set; }
         public decimal Credits { get; set; }
         public string Fullname { get; set; }
         public string CourseName { get; set; }
+        public string CourseCode { get; set; }
         public string TeacherName { get; set; }
         public string IndustryName { get; set; }
+        public string TranningLevelName { get; set; }
+        public string IndustryCode { get; set; }
         public string DepartmentName { get; set; }
         public string Usercode { get; set; }
         public string Classname { get; set; }

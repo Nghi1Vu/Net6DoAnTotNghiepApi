@@ -6,8 +6,12 @@ namespace Net6WebApiTemplate.Application.Products.Dto
     {
         public int CreatedClass { get; set; }
         public int CreditsS { get; set; }
+        public int MinCreditsLT { get; set; }
+        public int MinCreditsTH { get; set; }
+        public int MinCreditsK { get; set; }
         public int ModulesTypeID { get; set; }
         public int ProgramGroupID { get; set; }
+        public string GroupName { get; set; }
         public string ModulesCode { get; set; }
         public string TypeName { get; set; }
         public string ModulesTQ { get; set; }

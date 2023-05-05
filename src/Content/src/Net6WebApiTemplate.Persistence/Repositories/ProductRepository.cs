@@ -135,9 +135,12 @@ namespace Net7studentportal.Persistence.Repositories
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 			I.IndustryName,
+i.IndustryCode,
+tl.TranningLevelName,
+ci.CourseIndustryID,
 			d.DepartmentName,
 			um.TBCTL,
-            vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,cid.Credits
+            vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
 			join ClassUser cu on cu.UserID=vr.UserID and vr.Username=@Username and vr.Password=@Password
 			join Class c on c.ClassID= cu.ClassID
@@ -147,7 +150,8 @@ namespace Net7studentportal.Persistence.Repositories
 			join Department d on d.DepartmentID=i.DepartmentID
 			join UserMark um on um.UserID=vr.UserID
 			join vnk_Course co on co.CourseID= ci.CourseID
-            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID",
+            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
+join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
             new { @Username = Username, @Password = hash }).FirstOrDefault();
             if (obj != null)
             {
@@ -167,9 +171,12 @@ namespace Net7studentportal.Persistence.Repositories
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 			I.IndustryName,
+i.IndustryCode,
+tl.TranningLevelName,
+ci.CourseIndustryID,
 			d.DepartmentName,
 			um.TBCTL,
-            vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,cid.Credits
+            vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
 			join ClassUser cu on cu.UserID=vr.UserID and vr.email = @email
 			join Class c on c.ClassID= cu.ClassID
@@ -179,7 +186,8 @@ namespace Net7studentportal.Persistence.Repositories
 			join Department d on d.DepartmentID=i.DepartmentID
 			join UserMark um on um.UserID=vr.UserID
 			join vnk_Course co on co.CourseID= ci.CourseID
-            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID",
+            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
+join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
             new { @email = email }).FirstOrDefault();
             if (obj != null)
             {
@@ -303,7 +311,7 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
         public List<ProgramSemester> GetProgramSemester()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select cis.Credits as CreditsS,(select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise) as ModulesTQ,(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore) as ModulesHT, md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
+            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits as CreditsS,(select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise) as ModulesTQ,(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore) as ModulesHT, md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
 join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
 left join ProgramGroup pg on pg.ProgramID = p.ProgramID
 join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
@@ -313,7 +321,7 @@ join ModulesType mt on mt.TypeID=md.ModulesTypeID
 left join ModulesBefore mb on mb.ModulesID=md.ModulesID and isnull(mb.Del,0)=0
 left join ModulesPremise mp on mp.ModulesID=md.ModulesID and isnull(mp.Del,0)=0
 join CourseIndustrySemester cis on cis.CourseIndustryID = p.CourseIndustryID and cis.TypeID = 0 and cis.SemesterID=pm.Semester
-group by cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID",
+group by pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID",
                 new { }).ToList();
 
             //            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
@@ -345,12 +353,12 @@ md.Purposely,md.PurposelyKN,md.PurposelyYT,ms.ChapterName,ms.ContentChapter,
 ms.TimesST,ms.TimesLT,ms.TimesBT,ms.TimesTL,ms.TimesTH,ms.TimesK,ms.TimesTest,
 md.[References],tl.TranningLevelName,m.NumberStPerClass,et.ExamTypeName, et.ExamRateTL,
 et.ExamRateTN, et.ExamRateK from vnk_Modules m
-join ModulesDetail md on md.ModulesID= m.ModulesID and m.ModulesID=39
+join ModulesDetail md on md.ModulesID= m.ModulesID and m.ModulesID=@ModulesID
 join ModulesStruct ms on ms.ModulesID=m.ModulesID
 join Department d on d.DepartmentID=m.DepartmentID
 join TranningLevel tl on  tl.TranningLevelID=m.TranningLevelID
 join vnk_ExamType et on et.ExamTypeID=m.ExamTypeID",
-                new { }).ToList();
+                new { @ModulesID = ModulesID }).ToList();
             if (obj != null)
             {
                 return obj;
