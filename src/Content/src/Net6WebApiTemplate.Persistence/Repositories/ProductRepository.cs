@@ -142,19 +142,19 @@ ci.CourseIndustryID,
 			um.TBCTL,
             vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
-			join ClassUser cu on cu.UserID=vr.UserID and vr.Username=@Username and vr.Password=@Password
-			join Class c on c.ClassID= cu.ClassID
-			join ClassTeacher ct on ct.ClassID = cu.ClassID
-            join CourseIndustry ci on ci.CourseIndustryID = c.CourseIndustryID
-			join Industry i on i.IndustryID=ci.IndustryID
-			join Department d on d.DepartmentID=i.DepartmentID
-			join UserMark um on um.UserID=vr.UserID
-			join vnk_Course co on co.CourseID= ci.CourseID
-            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
-join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
+			join ClassUser cu on cu.UserID=vr.UserID and vr.Username = @Username and vr.Password = @Password
+			left join Class c on c.ClassID= cu.ClassID
+		 left	join ClassTeacher ct on ct.ClassID = cu.ClassID
+           left join CourseIndustry ci on ci.CourseIndustryID = c.CourseIndustryID
+			left join Industry i on i.IndustryID=ci.IndustryID
+			left join Department d on d.DepartmentID=i.DepartmentID
+			left join UserMark um on um.UserID=vr.UserID
+		left	join vnk_Course co on co.CourseID= ci.CourseID
+           left join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
+left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
             new { @Username = Username, @Password = hash }).FirstOrDefault();
             if (obj != null)
-            {
+            {      
                 StudentInfo a = new StudentInfo();
                 return obj;
             }
@@ -179,15 +179,15 @@ ci.CourseIndustryID,
             vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
 			join ClassUser cu on cu.UserID=vr.UserID and vr.email = @email
-			join Class c on c.ClassID= cu.ClassID
-			join ClassTeacher ct on ct.ClassID = cu.ClassID
-            join CourseIndustry ci on ci.CourseIndustryID = c.CourseIndustryID
-			join Industry i on i.IndustryID=ci.IndustryID
-			join Department d on d.DepartmentID=i.DepartmentID
-			join UserMark um on um.UserID=vr.UserID
-			join vnk_Course co on co.CourseID= ci.CourseID
-            join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
-join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
+			left join Class c on c.ClassID= cu.ClassID
+		 left	join ClassTeacher ct on ct.ClassID = cu.ClassID
+           left join CourseIndustry ci on ci.CourseIndustryID = c.CourseIndustryID
+			left join Industry i on i.IndustryID=ci.IndustryID
+			left join Department d on d.DepartmentID=i.DepartmentID
+			left join UserMark um on um.UserID=vr.UserID
+		left	join vnk_Course co on co.CourseID= ci.CourseID
+           left join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
+left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
             new { @email = email }).FirstOrDefault();
             if (obj != null)
             {
