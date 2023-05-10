@@ -384,29 +384,92 @@ left join ModulesType mt on mt.TypeID= m.ModulesTypeID",
                 return new List<ModuleDetail>();
             }
         }
-//        public List<ModuleDetail> GetProgram()
-//        {
-//            using var sqlconnection = _connectionFactory.CreateConnection();
-//            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select (select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise),(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore), md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
-//join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
-//left join ProgramGroup pg on pg.ProgramID = p.ProgramID
-//join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
-//left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
-//join Semester s on s.SemesterID=pm.Semester
-//join ModulesType mt on mt.TypeID=md.ModulesTypeID
-//left join ModulesBefore mb on mb.ModulesID=md.ModulesID and isnull(mb.Del,0)=0
-//left join ModulesPremise mp on mp.ModulesID=md.ModulesID and isnull(mp.Del,0)=0
-//group by mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID
-//",
-//                new { }).ToList();
-//            if (obj != null)
-//            {
-//                return obj;
-//            }
-//            else
-//            {
-//                return new List<ModuleDetail>();
-//            }
-//        }
+        //        public List<ModuleDetail> GetProgram()
+        //        {
+        //            using var sqlconnection = _connectionFactory.CreateConnection();
+        //            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select (select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise),(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore), md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
+        //join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
+        //left join ProgramGroup pg on pg.ProgramID = p.ProgramID
+        //join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
+        //left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
+        //join Semester s on s.SemesterID=pm.Semester
+        //join ModulesType mt on mt.TypeID=md.ModulesTypeID
+        //left join ModulesBefore mb on mb.ModulesID=md.ModulesID and isnull(mb.Del,0)=0
+        //left join ModulesPremise mp on mp.ModulesID=md.ModulesID and isnull(mp.Del,0)=0
+        //group by mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID
+        //",
+        //                new { }).ToList();
+        //            if (obj != null)
+        //            {
+        //                return obj;
+        //            }
+        //            else
+        //            {
+        //                return new List<ModuleDetail>();
+        //            }
+        //        }
+        public List<ModuleDetail> GetKQHTByUser(int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType,* from vnk_UserScore us
+join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=32783
+join Modules m on m.ModulesID= ic.ModulesID",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
+        public List<ModuleDetail> GetKQHTByClass(int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select u.Usercode, (u.Lastname + ' ' + u.Firstname) Fullname,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType,* from vnk_UserScore us
+join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and us.IndependentClassID=43698
+join Modules m on m.ModulesID= ic.ModulesID 
+join vnk_User u on u.UserID= us.UserID",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
+        public List<ModuleDetail> GetCertificateByUser(int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateUser cu 
+join CertificateChannel cc on cc.CertificateID=cu.CertificateID and cu.UserID=32783",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
+        public List<ModuleDetail> GetCertificateAll(int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateChannel cc
+join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
     }
 }
