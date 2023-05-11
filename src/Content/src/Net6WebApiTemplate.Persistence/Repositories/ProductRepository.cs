@@ -471,5 +471,20 @@ join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndus
                 return new List<ModuleDetail>();
             }
         }
+        public List<ModuleDetail> GetTC(int ModulesID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateChannel cc
+join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
+        }
     }
 }
