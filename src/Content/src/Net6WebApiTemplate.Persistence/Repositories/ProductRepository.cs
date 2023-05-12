@@ -485,6 +485,24 @@ join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndus
             {
                 return new List<ModuleDetail>();
             }
+        } 
+        public List<ModuleDetail> GetIC(int ModulesID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select (select top 1 RoomName from Room where RoomID=(select top 1 RoomID from RoomStudy where IndependentClassID=ic.IndependentClassID)) as RoomName,ictp.Times,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
+join vnk_Modules m on m.ModulesID=ic.ModulesID and CourseID=100 and Semester=10 and ic.ModulesID=28
+join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
+join IndependentClassTimesPlan ictp on ictp.IndependentClassID=ic.IndependentClassID
+group by ic.IndependentClassID,ictp.Times,ic.ClassName,ic.ClassCode,ict.UserID,ic.StartDate,m.Credits,ic.MaxStudent",
+                new { @ModulesID = ModulesID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ModuleDetail>();
+            }
         }
     }
 }
