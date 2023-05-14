@@ -408,37 +408,37 @@ left join ModulesType mt on mt.TypeID= m.ModulesTypeID",
         //                return new List<ModuleDetail>();
         //            }
         //        }
-        public List<ModuleDetail> GetKQHTByUser(int ModulesID)
+        public List<KQHT> GetKQHTByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType,* from vnk_UserScore us
-join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=32783
+            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
+join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=@UserID
 join Modules m on m.ModulesID= ic.ModulesID",
-                new { @ModulesID = ModulesID }).ToList();
+                new { @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<ModuleDetail>();
+                return new List<KQHT>();
             }
         }
-        public List<ModuleDetail> GetKQHTByClass(int ModulesID)
+        public List<KQHT> GetKQHTByClass(int IndependentClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select u.Usercode, (u.Lastname + ' ' + u.Firstname) Fullname,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType,* from vnk_UserScore us
-join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and us.IndependentClassID=43698
+            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select u.UserID,u.Usercode, (u.Lastname + ' ' + u.Firstname) Fullname,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
+join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and us.IndependentClassID=@IndependentClassID
 join Modules m on m.ModulesID= ic.ModulesID 
 join vnk_User u on u.UserID= us.UserID",
-                new { @ModulesID = ModulesID }).ToList();
+                new { @IndependentClassID = IndependentClassID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<ModuleDetail>();
+                return new List<KQHT>();
             }
         }
         public List<ModuleDetail> GetCertificateByUser(int ModulesID)

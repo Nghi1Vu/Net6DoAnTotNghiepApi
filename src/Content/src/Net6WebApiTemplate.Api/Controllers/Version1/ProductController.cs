@@ -310,5 +310,33 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetKQHTByUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetKQHTByUser(int UserID)
+        {
+            var query = new GetKQHTByUserCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetKQHTByClass")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetKQHTByClass(int IndependentClassID)
+        {
+            var query = new GetKQHTByClassCommand()
+            {
+                IndependentClassID = IndependentClassID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }

@@ -22,5 +22,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<ProgramSemester> GetProgramSemester();
         List<ModuleDetail> GetModuleDetail(int ModulesID);
         List<IndependentClass> GetIC(int ModulesID);
+        List<KQHT> GetKQHTByClass(int IndependentClassID);
+        List<KQHT> GetKQHTByUser(int UserID);
     }
 }
