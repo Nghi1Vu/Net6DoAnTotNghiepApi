@@ -296,5 +296,19 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetIC")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetIC(int ModulesID)
+        {
+            var query = new GetICCommand()
+            {
+                ModulesID = ModulesID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }

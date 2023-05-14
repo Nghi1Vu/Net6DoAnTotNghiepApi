@@ -486,14 +486,19 @@ join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndus
                 return new List<ModuleDetail>();
             }
         } 
-        public List<ModuleDetail> GetIC(int ModulesID) //TC=Teacher Calendar
+        public List<IndependentClass> GetIC(int ModulesID) //TC=Teacher Calendar
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select (select top 1 RoomName from Room where RoomID=(select top 1 RoomID from RoomStudy where IndependentClassID=ic.IndependentClassID)) as RoomName,ictp.Times,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
-join vnk_Modules m on m.ModulesID=ic.ModulesID and CourseID=100 and Semester=10 and ic.ModulesID=28
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"SELECT TBL.COSTS,STRING_AGG(TBL.RoomName,',') AS RoomName, TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent FROM
+(select (SELECT TOP 1 Costs FROM vnk_IndependentClassUser WHERE IndependentClassID=ICTP.IndependentClassID AND UserID=32783 ) AS COSTS,R.RoomName,ET.Description,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
+join vnk_Modules m on m.ModulesID=ic.ModulesID and CourseID=100 and Semester=10 and ic.ModulesID=@ModulesID
 join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
 join IndependentClassTimesPlan ictp on ictp.IndependentClassID=ic.IndependentClassID
-group by ic.IndependentClassID,ictp.Times,ic.ClassName,ic.ClassCode,ict.UserID,ic.StartDate,m.Credits,ic.MaxStudent",
+JOIN RoomStudy RS ON RS.IndependentClassID=ICTP.IndependentClassID
+JOIN ROOM R ON R.RoomID=RS.RoomID
+JOIN vnk_ExamTime ET ON ET.ExamTimeID= ICTP.Times
+group by ICTP.IndependentClassID,R.RoomName,ET.Description,ic.ClassName,ic.ClassCode,ict.UserID,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
+GROUP BY TBL.COSTS,TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent",
                 new { @ModulesID = ModulesID }).ToList();
             if (obj != null)
             {
@@ -501,7 +506,7 @@ group by ic.IndependentClassID,ictp.Times,ic.ClassName,ic.ClassCode,ict.UserID,i
             }
             else
             {
-                return new List<ModuleDetail>();
+                return new List<IndependentClass>();
             }
         }
     }

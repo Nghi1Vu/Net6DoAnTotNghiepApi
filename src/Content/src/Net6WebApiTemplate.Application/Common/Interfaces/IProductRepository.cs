@@ -21,5 +21,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         int PostRLForm(PostRLForm model);
         List<ProgramSemester> GetProgramSemester();
         List<ModuleDetail> GetModuleDetail(int ModulesID);
+        List<IndependentClass> GetIC(int ModulesID);
     }
 }
