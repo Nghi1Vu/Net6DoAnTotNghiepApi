@@ -441,51 +441,36 @@ join vnk_User u on u.UserID= us.UserID",
                 return new List<KQHT>();
             }
         }
-        public List<ModuleDetail> GetCertificateByUser(int ModulesID)
+        public List<Certificate> GetCertificateByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateUser cu 
-join CertificateChannel cc on cc.CertificateID=cu.CertificateID and cu.UserID=32783",
-                new { @ModulesID = ModulesID }).ToList();
+            List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode from CertificateUser cu 
+join CertificateChannel cc on cc.CertificateID=cu.CertificateID and cu.UserID=@UserID",
+                new { @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<ModuleDetail>();
+                return new List<Certificate>();
             }
         }
-        public List<ModuleDetail> GetCertificateAll(int ModulesID)
+        public List<Certificate> GetCertificateAll()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateChannel cc
+            List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode from CertificateChannel cc
 join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751",
-                new { @ModulesID = ModulesID }).ToList();
+                new { }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<ModuleDetail>();
+                return new List<Certificate>();
             }
         }
-        public List<ModuleDetail> GetTC(int ModulesID) //TC=Teacher Calendar
-        {
-            using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ModuleDetail> obj = sqlconnection.Query<ModuleDetail>(@"select cc.CertificateName,cc.CertificateCode,* from CertificateChannel cc
-join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751",
-                new { @ModulesID = ModulesID }).ToList();
-            if (obj != null)
-            {
-                return obj;
-            }
-            else
-            {
-                return new List<ModuleDetail>();
-            }
-        } 
         public List<IndependentClass> GetIC(int ModulesID) //TC=Teacher Calendar
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
@@ -507,6 +492,35 @@ GROUP BY TBL.COSTS,TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachernam
             else
             {
                 return new List<IndependentClass>();
+            }
+        }
+        public List<DsGtHs> GetDsGtHs(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<DsGtHs> obj = sqlconnection.Query<DsGtHs>(@"select RL.RevenuesListName,RL.Num,RU.NumU from RevenuesList RL
+JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@UserID",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<DsGtHs>();
+            }
+        }      
+        public List<TradeHistory> GetTradeHistory(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TradeHistory> obj = sqlconnection.Query<TradeHistory>(@"select CreatedTime, iif(LEFT(Costs,1)!='-','+',LEFT(Costs,1)) AS Status,iif(left(Costs,1)='-',SUBSTRING(CAST(Costs AS VARCHAR),1,LEN(CAST(Costs AS VARCHAR))),Costs) AS Costs,Description from LogCharge where UserID=@UserID",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TradeHistory>();
             }
         }
     }

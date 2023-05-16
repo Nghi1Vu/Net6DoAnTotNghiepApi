@@ -24,5 +24,9 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<IndependentClass> GetIC(int ModulesID);
         List<KQHT> GetKQHTByClass(int IndependentClassID);
         List<KQHT> GetKQHTByUser(int UserID);
+        List<TradeHistory> GetTradeHistory(int UserID);
+        List<DsGtHs> GetDsGtHs(int UserID);
+        List<Certificate> GetCertificateAll();
+        List<Certificate> GetCertificateByUser(int UserID);
     }
 }

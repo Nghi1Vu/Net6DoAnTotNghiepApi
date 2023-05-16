@@ -338,5 +338,60 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetCertificateByUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetCertificateByUser(int UserID)
+        {
+            var query = new GetCertificateByUserCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetCertificateAll")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetCertificateAll()
+        {
+            var query = new GetCertificateAllCommand()
+            {
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetDsGtHs")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetDsGtHs(int UserID)
+        {
+            var query = new GetDsGtHsCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTradeHistory")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTradeHistory(int UserID)
+        {
+            var query = new GetTradeHistoryCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }
