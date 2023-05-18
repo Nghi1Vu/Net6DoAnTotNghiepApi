@@ -28,5 +28,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<DsGtHs> GetDsGtHs(int UserID);
         List<Certificate> GetCertificateAll();
         List<Certificate> GetCertificateByUser(int UserID);
+        List<Message> GetMessage(int ClassID);
     }
 }

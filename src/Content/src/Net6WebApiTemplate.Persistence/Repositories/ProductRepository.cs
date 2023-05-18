@@ -134,6 +134,7 @@ namespace Net7studentportal.Persistence.Repositories
             StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
+c.ClassID,
 			I.IndustryName,
 i.IndustryCode,
 tl.TranningLevelName,
@@ -170,6 +171,7 @@ left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
             StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
+c.ClassID,
 			I.IndustryName,
 i.IndustryCode,
 tl.TranningLevelName,
@@ -497,7 +499,7 @@ GROUP BY TBL.COSTS,TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachernam
         public List<DsGtHs> GetDsGtHs(int UserID) //TC=Teacher Calendar
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<DsGtHs> obj = sqlconnection.Query<DsGtHs>(@"select RL.RevenuesListName,RL.Num,RU.NumU from RevenuesList RL
+            List<DsGtHs> obj = sqlconnection.Query<DsGtHs>(@"select RL.RevenuesListName,RL.Num,RU.Num as NumU from RevenuesList RL
 JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@UserID",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
@@ -521,6 +523,22 @@ JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@Us
             else
             {
                 return new List<TradeHistory>();
+            }
+        }
+        public List<Message> GetMessage(int ClassID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<Message> obj = sqlconnection.Query<Message>(@"select c.Content,(u.Lastname+' '+u.Firstname)as fromuser,(select Lastname+' '+Firstname from vnk_User where UserID=c.FieldID)as touser,c.CreatedTime from vnk_Comment c
+join ClassUser cu on (cu.UserID=c.OwnerID or cu.UserID=c.PeopleID) and cu.ClassID=@ClassID
+join vnk_User u on u.UserID=cu.UserID",
+                new { @ClassID = ClassID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<Message>();
             }
         }
     }
