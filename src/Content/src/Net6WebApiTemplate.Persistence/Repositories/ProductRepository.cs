@@ -446,24 +446,10 @@ join vnk_User u on u.UserID= us.UserID",
         public List<Certificate> GetCertificateByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode from CertificateUser cu 
-join CertificateChannel cc on cc.CertificateID=cu.CertificateID and cu.UserID=@UserID",
+            List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode,cu.ID from CertificateChannel cc
+join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751
+left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@UserID",
                 new { @UserID = UserID }).ToList();
-            if (obj != null)
-            {
-                return obj;
-            }
-            else
-            {
-                return new List<Certificate>();
-            }
-        }
-        public List<Certificate> GetCertificateAll()
-        {
-            using var sqlconnection = _connectionFactory.CreateConnection();
-            List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode from CertificateChannel cc
-join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=751",
-                new { }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -528,8 +514,8 @@ JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@Us
         public List<Message> GetMessage(int ClassID) //TC=Teacher Calendar
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<Message> obj = sqlconnection.Query<Message>(@"select c.Content,(u.Lastname+' '+u.Firstname)as fromuser,(select Lastname+' '+Firstname from vnk_User where UserID=c.FieldID)as touser,c.CreatedTime from vnk_Comment c
-join ClassUser cu on (cu.UserID=c.OwnerID or cu.UserID=c.PeopleID) and cu.ClassID=@ClassID
+            List<Message> obj = sqlconnection.Query<Message>(@"select c.CommentID,c.ParentID,c.OwnerID,c.Content,(select Lastname+' '+Firstname from vnk_User where UserID=c.OwnerID)as fromuser,(select Lastname+' '+Firstname from vnk_User where UserID=c.FieldID)as touser,c.CreatedTime from vnk_Comment c
+join ClassUser cu on (cu.UserID=c.OwnerID or cu.UserID=c.PeopleID or c.FieldID=cu.UserID) and cu.ClassID=@ClassID
 join vnk_User u on u.UserID=cu.UserID",
                 new { @ClassID = ClassID }).ToList();
             if (obj != null)
@@ -539,6 +525,81 @@ join vnk_User u on u.UserID=cu.UserID",
             else
             {
                 return new List<Message>();
+            }
+        }
+        public List<ChannelAmount> GetChannelAmount(int ClassID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ChannelAmount> obj = sqlconnection.Query<ChannelAmount>(@"SELECT Day,ModifiedTime,ChannelAmountID,ChannelAmountName,(SELECT TOP 1 Amount FROM StudentAmount WHERE ChannelAmountID=CA.ChannelAmountID) AS Costs FROM ChannelAmount CA
+WHERE TypeID=2 AND IsLock=0",
+                new { @ClassID = ClassID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {   
+                return new List<ChannelAmount>();
+            }
+        }
+        public List<StudentAmount> GetStudentAmount(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<StudentAmount> obj = sqlconnection.Query<StudentAmount>(@"select ca.ChannelAmountName,sa.Amount,sa.Quantity,(sa.Quantity*sa.Amount) as TotalAmount,sa.CreatedTime,
+sa.StatusID,ca.Day from StudentAmount sa
+join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
+where sa.UserID=@UserID and ca.IsLock=0 and ca.TypeID=2
+order by sa.CreatedTime desc",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<StudentAmount>();
+            }
+        }
+        public List<TTCN> GetTTCNDone(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,ic.ClassName,m.Credits,icu.Costs,icu.Status from vnk_IndependentClassUser icu
+join IndependentClass ic on icu.IndependentClassID=ic.IndependentClassID
+join Modules m on m.ModulesID= ic.ModulesID
+where UserID=32783
+union all
+select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount,sa.Paid from StudentAmount sa
+join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
+where sa.UserID=32783 and sa.Paid=1 and (sa.StatusID =3 or sa.StatusID is null)",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TTCN>();
+            }
+        }
+        public List<TTCN> GetTTCN(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,m.ModulesName,m.Credits,icu.Costs from vnk_IndependentClassUser icu
+join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID 
+join Modules m on m.ModulesID=ic.ModulesID
+where icu.Paid=0 and icu.UserID=@UserID and icu.Del=0
+union all
+select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount from StudentAmount sa
+join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
+where UserID=@UserID and Paid=0 and sa.Del=0",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TTCN>();
             }
         }
     }

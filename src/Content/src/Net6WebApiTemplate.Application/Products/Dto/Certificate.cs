@@ -6,5 +6,6 @@ namespace Net6WebApiTemplate.Application.Products.Dto
     {
         public string CertificateName { get; set; }
         public string CertificateCode { get; set; }
+        public int ID { get; set; }
     }
 }

@@ -26,8 +26,11 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<KQHT> GetKQHTByUser(int UserID);
         List<TradeHistory> GetTradeHistory(int UserID);
         List<DsGtHs> GetDsGtHs(int UserID);
-        List<Certificate> GetCertificateAll();
         List<Certificate> GetCertificateByUser(int UserID);
         List<Message> GetMessage(int ClassID);
+        List<ChannelAmount> GetChannelAmount(int ClassID);
+        List<StudentAmount> GetStudentAmount(int UserID);
+        List<TTCN> GetTTCNDone(int UserID);
+        List<TTCN> GetTTCN(int UserID);
     }
 }

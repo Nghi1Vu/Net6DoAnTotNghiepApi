@@ -353,19 +353,6 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             return Ok(result);
         }
         [HttpGet]
-        [Route("/api/v{version:apiVersion}/GetCertificateAll")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetCertificateAll()
-        {
-            var query = new GetCertificateAllCommand()
-            {
-            };
-            var result = await _mediator.Send(query);
-
-            return Ok(result);
-        }
-        [HttpGet]
         [Route("/api/v{version:apiVersion}/GetDsGtHs")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -400,6 +387,62 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         public async Task<IActionResult> GetMessage(int ClassID)
         {
             var query = new GetMessageCommand()
+            {
+                ClassID = ClassID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTTCN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTTCN(int UserID)
+        {
+            var query = new GetTTCNCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTTCNDone")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTTCNDone(int UserID)
+        {
+            var query = new GetTTCNDoneCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetStudentAmount")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetStudentAmount(int UserID)
+        {
+            var query = new GetStudentAmountCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetChannelAmount")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetChannelAmount(int ClassID)
+        {
+            var query = new GetChannelAmountCommand()
             {
                 ClassID = ClassID
             };
