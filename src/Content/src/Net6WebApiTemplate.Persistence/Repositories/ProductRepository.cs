@@ -602,5 +602,51 @@ where UserID=@UserID and Paid=0 and sa.Del=0",
                 return new List<TTCN>();
             }
         }
+        public List<TTCN> GetExamResult(int UserID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
+mus.SemesterIndex,m.Credits,(select Score from vnk_UserScore where ScoreType=50 and UserID=mus.UserID 
+and IndependentClassID=icu.IndependentClassID) as SGKL1,
+(select Sum(Score)/COUNT(*) from vnk_UserScore where (ScoreType=1 or ScoreType=2 or ScoreType=3 or ScoreType=4 or
+ScoreType=5 or ScoreType=6) and UserID=mus.UserID 
+and IndependentClassID=(select IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID AND UserID=mus.UserID)) as TBKTTK
+,(SELECT Score FROM vnk_UserEnScore WHERE NoID=(select NoID from vnk_UserNoID where UserID=mus.UserID and ExamPlanTimeID=
+(select TOP 1 ExamPlanTimeID from vnk_ExamPlanTime where IndependentClassID=icu.IndependentClassID))) AS EXAM,
+mus.ScoreFinal,cast(mus.ScoreFinal/10*4 as decimal(2,1)) AS D4,
+fd.XH,fd.SymbolName
+from ModulesUserScore mus
+left join Modules m on m.ModulesID=mus.ModulesID
+left join vnk_IndependentClassUser icu on icu.ModulesID=mus.ModulesID AND icu.UserID=mus.UserID
+left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
+where mus.UserID=@UserID",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TTCN>();
+            }
+        }
+        public List<TTCN> GetExamByClass(int IndependentClassID) //TC=Teacher Calendar
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
+left join vnk_IndependentClassUser icu on icu.IndependentClassID=ic.IndependentClassID
+left join ModulesUserScore mus on mus.ModulesID=ic.ModulesID and mus.UserID=icu.UserID
+left join vnk_User u on u.UserID=mus.UserID
+where ic.IndependentClassID=@IndependentClassID",
+                new { @IndependentClassID = IndependentClassID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TTCN>();
+            }
+        }
     }
 }
