@@ -450,5 +450,76 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetExamResult")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetExamResult(int UserID)
+        {
+            var query = new GetExamResultCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetExamByClass")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetExamByClass(int IndependentClassID)
+        {
+            var query = new GetExamByClassCommand()
+            {
+                IndependentClassID = IndependentClassID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetExamCalendar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetExamCalendar(int UserID)
+        {
+            var query = new GetExamCalendarCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTeachCalendar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTeachCalendar(int UserID)
+        {
+            var query = new GetTeachCalendarCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTeachCalendarDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTeachCalendarDetail(int IndependentClassID, int UserID)
+        {
+            var query = new GetTeachCalendarDetailCommand()
+            {
+                IndependentClassID= IndependentClassID,
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }

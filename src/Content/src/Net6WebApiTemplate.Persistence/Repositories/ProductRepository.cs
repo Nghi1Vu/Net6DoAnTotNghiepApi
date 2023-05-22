@@ -574,10 +574,10 @@ where UserID=@UserID and Paid=0 and sa.Del=0",
                 return new List<TTCN>();
             }
         }
-        public List<TTCN> GetExamResult(int UserID)
+        public List<ExamResult> GetExamResult(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
+            List<ExamResult> obj = sqlconnection.Query<ExamResult>(@"select mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
 mus.SemesterIndex,m.Credits,(select Score from vnk_UserScore where ScoreType=50 and UserID=mus.UserID 
 and IndependentClassID=icu.IndependentClassID) as SGKL1,
 (select Sum(Score)/COUNT(*) from vnk_UserScore where (ScoreType=1 or ScoreType=2 or ScoreType=3 or ScoreType=4 or
@@ -599,13 +599,13 @@ where mus.UserID=@UserID",
             }
             else
             {
-                return new List<TTCN>();
+                return new List<ExamResult>();
             }
         }
-        public List<TTCN> GetExamByClass(int IndependentClassID) 
+        public List<ExamByClass> GetExamByClass(int IndependentClassID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
+            List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
 left join vnk_IndependentClassUser icu on icu.IndependentClassID=ic.IndependentClassID
 left join ModulesUserScore mus on mus.ModulesID=ic.ModulesID and mus.UserID=icu.UserID
 left join vnk_User u on u.UserID=mus.UserID
@@ -617,68 +617,68 @@ where ic.IndependentClassID=@IndependentClassID",
             }
             else
             {
-                return new List<TTCN>();
+                return new List<ExamByClass>();
             }
         }
-        public List<TTCN> GetExamCalendar(int IndependentClassID) 
+        public List<ExamCalendar> GetExamCalendar(int UserID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select d.DepartmentName,ic.ClassName,ic.ClassCode,ept.CreatedTime,(select CampusName from vnk_Campus where CampusID=(select CampusID from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1)))as Campus,(select ExamZoomName from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1))as Room,icur.RegisterID,m.ModulesName,ept.DateExam,et.ExamTimeName from vnk_IndependentClassUser icu
+            List<ExamCalendar> obj = sqlconnection.Query<ExamCalendar>(@"select d.DepartmentName,ic.ClassName,ic.ClassCode,ept.CreatedTime,(select CampusName from vnk_Campus where CampusID=(select CampusID from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1)))as Campus,(select ExamZoomName from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1))as Room,icur.RegisterID,m.ModulesName,ept.DateExam,et.ExamTimeName from vnk_IndependentClassUser icu
 join vnk_ExamPlanTime ept on ept.IndependentClassID=icu.IndependentClassID AND ept.CreatedTime = (Select Min(CreatedTime) from vnk_ExamPlanTime as B2 where B2.IndependentClassID=icu.IndependentClassID)
 join vnk_ExamTime et on et.ExamTimeID=ept.ExamTime
 left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
 left join Modules m on m.ModulesID=icu.ModulesID
 left join vnk_Department d on d.DepartmentID=ic.DepartmentID
 left join IndependentClassUserRegister icur on icur.IndependentClassID=icu.IndependentClassID and icur.UserID=icu.UserID
-where icu.UserID=32783
+where icu.UserID=@UserID
 ",
-                new { @IndependentClassID = IndependentClassID }).ToList();
+                new { @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<TTCN>();
+                return new List<ExamCalendar>();
             }
         }
-        public List<TTCN> GetTeachCalendar(int IndependentClassID) 
+        public List<TeachCalendar> GetTeachCalendar(int UserID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select (select Phone from vnk_User where UserID=
+            List<TeachCalendar> obj = sqlconnection.Query<TeachCalendar>(@"select (select Phone from vnk_User where UserID=
 (select top 1 UserID from IndependentClassTeacher where IndependentClassID=icu.IndependentClassID)) as teacherphone,
 (select top 1 min(StudyDate) from RoomStudy where IndependentClassID=icu.IndependentClassID) minDay,
 (select top 1 max(StudyDate) from RoomStudy where IndependentClassID=icu.IndependentClassID) maxDay,
 (select Lastname+' '+Firstname from vnk_User where UserID=
 (select top 1 UserID from IndependentClassTeacher where IndependentClassID=icu.IndependentClassID)) as teachername,
-icu.IndependentClassID,('HP'+m.ModulesCode) as MHP,m.ModulesName,m.Credits,* from vnk_IndependentClassUser icu
+icu.IndependentClassID,('HP'+m.ModulesCode) as MHP,m.ModulesName,m.Credits from vnk_IndependentClassUser icu
 left join Modules m on m.ModulesID=icu.ModulesID
-where icu.UserID=32783",
-                new { @IndependentClassID = IndependentClassID }).ToList();
+where icu.UserID=@UserID",
+                new { @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<TTCN>();
+                return new List<TeachCalendar>();
             }
         }
-        public List<TTCN> GetTeachCalendarDetail(int IndependentClassID)
+        public List<TeachCalendarDetail> GetTeachCalendarDetail(int IndependentClassID, int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ictp.Day,ictp.Contents,et.Description,ictp.HaveTest,* from vnk_IndependentClassUser icu 
+            List<TeachCalendarDetail> obj = sqlconnection.Query<TeachCalendarDetail>(@"select ictp.Day,ictp.Contents,et.Description,ictp.HaveTest from vnk_IndependentClassUser icu 
 left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.IndependentClassID and ictp.Del=0
 left join vnk_ExamTime et on et.ExamTimeID= ictp.TimesInday
-where icu.IndependentClassID=57488 and icu.UserID=32783 ",
-                new { @IndependentClassID = IndependentClassID }).ToList();
+where icu.IndependentClassID=@IndependentClassID and icu.UserID=@UserID ",
+                new { @IndependentClassID = IndependentClassID , @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
             }
             else
             {
-                return new List<TTCN>();
+                return new List<TeachCalendarDetail>();
             }
         }
     }

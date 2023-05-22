@@ -32,5 +32,10 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<StudentAmount> GetStudentAmount(int UserID);
         List<TTCN> GetTTCNDone(int UserID);
         List<TTCN> GetTTCN(int UserID);
+        List<ExamResult> GetExamResult(int UserID);
+        List<ExamByClass> GetExamByClass(int IndependentClassID);
+        List<ExamCalendar> GetExamCalendar(int UserID);
+        List<TeachCalendar> GetTeachCalendar(int UserID);
+        List<TeachCalendarDetail> GetTeachCalendarDetail(int IndependentClassID, int UserID);
     }
 }
