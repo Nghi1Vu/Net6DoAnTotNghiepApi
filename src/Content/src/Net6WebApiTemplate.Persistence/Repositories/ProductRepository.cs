@@ -681,6 +681,22 @@ where icu.IndependentClassID=@IndependentClassID and icu.UserID=@UserID ",
                 return new List<TeachCalendarDetail>();
             }
         }
+        public List<TBCHKModel> GetTBCHK(int UserID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TBCHKModel> obj = sqlconnection.Query<TBCHKModel>(@"select Semester,TBCHK from UserMarkSemester
+where UserID=@UserID
+",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TBCHKModel>();
+            }
+        }
     }
 }
 #region note

@@ -5,6 +5,11 @@ namespace Net6WebApiTemplate.Application.Products.Dto
     public class ProgramSemester
     {
         public int CreatedClass { get; set; }
+        public decimal Score1 { get; set; }
+        public decimal ScoreFinal { get; set; }
+        public decimal D4 { get; set; }
+        public string SymbolName { get; set; }
+        public string XH { get; set; }
         public int CreditsS { get; set; }
         public int MinCreditsLT { get; set; }
         public int MinCreditsTH { get; set; }

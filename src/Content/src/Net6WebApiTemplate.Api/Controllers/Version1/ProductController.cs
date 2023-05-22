@@ -521,5 +521,19 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetTBCHK")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTBCHK( int UserID)
+        {
+            var query = new GetTBCHKCommand()
+            {
+                UserID = UserID
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }

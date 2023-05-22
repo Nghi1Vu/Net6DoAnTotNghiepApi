@@ -37,5 +37,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<ExamCalendar> GetExamCalendar(int UserID);
         List<TeachCalendar> GetTeachCalendar(int UserID);
         List<TeachCalendarDetail> GetTeachCalendarDetail(int IndependentClassID, int UserID);
+        List<TBCHKModel> GetTBCHK(int UserID);
     }
 }
