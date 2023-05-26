@@ -434,16 +434,21 @@ left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@Us
         public List<IndependentClass> GetIC(int ModulesID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"SELECT TBL.COSTS,STRING_AGG(TBL.RoomName,',') AS RoomName, TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent FROM
-(select (SELECT TOP 1 Costs FROM vnk_IndependentClassUser WHERE IndependentClassID=ICTP.IndependentClassID AND UserID=32783 ) AS COSTS,R.RoomName,ET.Description,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
-join vnk_Modules m on m.ModulesID=ic.ModulesID and CourseID=100 and Semester=10 and ic.ModulesID=@ModulesID
-join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
-join IndependentClassTimesPlan ictp on ictp.IndependentClassID=ic.IndependentClassID
-JOIN RoomStudy RS ON RS.IndependentClassID=ICTP.IndependentClassID
-JOIN ROOM R ON R.RoomID=RS.RoomID
-JOIN vnk_ExamTime ET ON ET.ExamTimeID= ICTP.Times
-group by ICTP.IndependentClassID,R.RoomName,ET.Description,ic.ClassName,ic.ClassCode,ict.UserID,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
-GROUP BY TBL.COSTS,TBL.Description, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent",
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"SELECT TBL.TimesInDay,TBL.DayStudy,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent FROM
+(select RS.DayStudy,STRING_AGG(RS.TimesInDay,',') AS TimesInDay,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
+left join vnk_Modules m on m.ModulesID=ic.ModulesID 
+left join IndependentClassTeacherChange ictc on ictc.IndependentClassID=ic.IndependentClassID
+left JOIN RoomStudy RS ON RS.IndependentClassID=IC.IndependentClassID AND
+RS.StudyTime=(SELECT MIN(StudyTime) FROM RoomStudy WHERE IndependentClassID=IC.IndependentClassID)
+AND RS.StudyDate=(SELECT MIN(StudyDate) FROM RoomStudy WHERE
+IndependentClassID=IC.IndependentClassID)
+left JOIN ROOM R ON R.RoomID=RS.RoomID
+left join ChannelAmountFee_CI cafci on cafci.CourseIndustryID=751 and cafci.ModulesTypeID=m.ModulesTypeID and cafci.ApplicateDate=(select max(ApplicateDate) from ChannelAmountFee_CI where 
+CourseIndustryID=751 and ModulesTypeID=m.ModulesTypeID)
+left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
+where ic.ModulesID=39 and ic.CourseID=100 
+group by RS.DayStudy,RS.TimesInDay,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
+GROUP BY TBL.TimesInDay,TBL.DayStudy,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent",
                 new { @ModulesID = ModulesID }).ToList();
             if (obj != null)
             {
