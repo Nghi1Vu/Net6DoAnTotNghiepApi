@@ -434,21 +434,20 @@ left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@Us
         public List<IndependentClass> GetIC(int ModulesID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"SELECT TBL.TimesInDay,TBL.DayStudy,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent FROM
-(select RS.DayStudy,STRING_AGG(RS.TimesInDay,',') AS TimesInDay,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits,ic.MaxStudent from vnk_IndependentClass ic
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@" select tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
+(select ((select cast(count(*) as varchar(50)) from vnk_IndependentClassUser where IndependentClassID=ic.IndependentClassID)+'/'+cast(ic.MaxStudent as varchar(50))) as SSSV , 
+ rs.DayStudy,rs.StudyTime,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits from vnk_IndependentClass ic
 left join vnk_Modules m on m.ModulesID=ic.ModulesID 
 left join IndependentClassTeacherChange ictc on ictc.IndependentClassID=ic.IndependentClassID
-left JOIN RoomStudy RS ON RS.IndependentClassID=IC.IndependentClassID AND
-RS.StudyTime=(SELECT MIN(StudyTime) FROM RoomStudy WHERE IndependentClassID=IC.IndependentClassID)
-AND RS.StudyDate=(SELECT MIN(StudyDate) FROM RoomStudy WHERE
-IndependentClassID=IC.IndependentClassID)
+left JOIN RoomStudy RS ON RS.IndependentClassID=IC.IndependentClassID
 left JOIN ROOM R ON R.RoomID=RS.RoomID
 left join ChannelAmountFee_CI cafci on cafci.CourseIndustryID=751 and cafci.ModulesTypeID=m.ModulesTypeID and cafci.ApplicateDate=(select max(ApplicateDate) from ChannelAmountFee_CI where 
 CourseIndustryID=751 and ModulesTypeID=m.ModulesTypeID)
 left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
-where ic.ModulesID=39 and ic.CourseID=100 
-group by RS.DayStudy,RS.TimesInDay,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
-GROUP BY TBL.TimesInDay,TBL.DayStudy,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits, TBL.MaxStudent",
+where ic.ModulesID=@ModulesID and ic.CourseID=100 
+group by ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
+GROUP BY tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
+group by tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
                 new { @ModulesID = ModulesID }).ToList();
             if (obj != null)
             {
