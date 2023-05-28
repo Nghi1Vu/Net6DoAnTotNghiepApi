@@ -5,6 +5,7 @@ using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Application.Shared.Interface;
 using Net6WebApiTemplate.Domain.Entities;
 using Org.BouncyCastle.Utilities;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Net7studentportal.Persistence.Repositories
 {
@@ -699,6 +700,32 @@ where UserID=@UserID
             else
             {
                 return new List<TBCHKModel>();
+            }
+        }
+        public List<TKB> GetTKB(int UserID, string aDate, string eDate)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<TKB> obj = sqlconnection.Query<TKB>(@"select c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,(u.Lastname+' '+u.Firstname) as teachername,rs.TimesInDay,rs.DayStudy,rs.StudyDate,string_Agg(rs.StudyTime,',')StudyTime,m.ModulesName,ic.ClassCode,ic.ClassName from RoomStudy rs
+join vnk_IndependentClassUser icu on icu.IndependentClassID=rs.IndependentClassID
+left join vnk_IndependentClass ic on ic.IndependentClassID=rs.IndependentClassID
+left join Modules m on m.ModulesID=ic.ModulesID
+left join IndependentClassTeacher ict on ict.IndependentClassID=rs.IndependentClassID
+and ict.CreatedTime=(select max(CreatedTime) from IndependentClassTeacher where
+IndependentClassID=rs.IndependentClassID)
+left join vnk_User u on u.UserID=ict.UserID
+left join Department d on d.DepartmentID=u.DepartmentID
+left join Room r on r.RoomID=rs.RoomID
+left join Campus c on c.CampusID= r.CampusID
+where icu.UserID=32783 and rs.StudyDate>@aDate and rs.StudyDate<@eDate --rs.IndependentClassID=55674
+group by c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
+                new { @aDate = aDate, @eDate= eDate, @UserID= UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<TKB>();
             }
         }
     }
