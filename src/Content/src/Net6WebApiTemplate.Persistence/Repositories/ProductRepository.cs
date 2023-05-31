@@ -445,7 +445,7 @@ left JOIN ROOM R ON R.RoomID=RS.RoomID
 left join ChannelAmountFee_CI cafci on cafci.CourseIndustryID=751 and cafci.ModulesTypeID=m.ModulesTypeID and cafci.ApplicateDate=(select max(ApplicateDate) from ChannelAmountFee_CI where 
 CourseIndustryID=751 and ModulesTypeID=m.ModulesTypeID)
 left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
-where ic.ModulesID=39 and ic.CourseID=100 
+where ic.ModulesID=@ModulesID and ic.CourseID=100 
 group by rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
 GROUP BY tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
 group by tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
@@ -726,6 +726,52 @@ group by c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.First
             else
             {
                 return new List<TKB>();
+            }
+        }
+        public List<LogDKHP> GetLogDKHP(int UserID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<LogDKHP> obj = sqlconnection.Query<LogDKHP>(@"select icur.OwnerID,(u.Lastname+' '+u.Firstname) as register,m.ModulesName,ic.ClassName,ic.ClassCode,icur.Del,icur.CreatedTime,icur.RegisterID,s.SemesterName from IndependentClassUserRegister icur
+left join IndependentClass ic on ic.IndependentClassID=icur.IndependentClassID
+left join Modules m on m.ModulesID=ic.ModulesID
+left join Semester s on s.SemesterID=ic.Semester
+left join vnk_User u on u.UserID=icur.OwnerID
+where icur.UserID=@UserID",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<LogDKHP>();
+            }
+        }
+        public List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
+(select rs.TimesInDay,((select cast(count(*) as varchar(50)) from vnk_IndependentClassUser where IndependentClassID=ic.IndependentClassID)+'/'+cast(ic.MaxStudent as varchar(50))) as SSSV , 
+ rs.DayStudy,rs.StudyTime,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits from vnk_IndependentClass ic
+left join vnk_Modules m on m.ModulesID=ic.ModulesID 
+left join IndependentClassTeacherChange ictc on ictc.IndependentClassID=ic.IndependentClassID
+left JOIN RoomStudy RS ON RS.IndependentClassID=IC.IndependentClassID
+left JOIN ROOM R ON R.RoomID=RS.RoomID
+left join ChannelAmountFee_CI cafci on cafci.CourseIndustryID=751 and cafci.ModulesTypeID=m.ModulesTypeID and cafci.ApplicateDate=(select max(ApplicateDate) from ChannelAmountFee_CI where 
+CourseIndustryID=751 and ModulesTypeID=m.ModulesTypeID)
+left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
+where  ic.CourseID=100 and ic.Semester=10 and rs.TimesInDay=@TimesInDay and DayStudy=@DayStudy
+group by rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
+GROUP BY tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
+group by tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
+                new { @TimesInDay = TimesInDay, @DayStudy = DayStudy }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<IndependentClass>();
             }
         }
     }

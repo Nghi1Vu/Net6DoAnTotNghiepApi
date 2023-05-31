@@ -551,5 +551,34 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetLogDKHP")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetLogDKHP(int UserID)
+        {
+            var query = new GetLogDKHPCommand()
+            {
+                UserID = UserID,
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetICByTKB")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetICByTKB(int TimesInDay, int DayStudy)
+        {
+            var query = new GetICByTKBCommand()
+            {
+                TimesInDay = TimesInDay,
+                DayStudy = DayStudy,
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }
