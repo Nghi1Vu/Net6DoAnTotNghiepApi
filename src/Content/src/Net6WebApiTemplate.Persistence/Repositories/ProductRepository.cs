@@ -736,7 +736,8 @@ left join IndependentClass ic on ic.IndependentClassID=icur.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
 left join Semester s on s.SemesterID=ic.Semester
 left join vnk_User u on u.UserID=icur.OwnerID
-where icur.UserID=@UserID",
+where icur.UserID=@UserID
+order by icur.CreatedTime desc",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
             {
