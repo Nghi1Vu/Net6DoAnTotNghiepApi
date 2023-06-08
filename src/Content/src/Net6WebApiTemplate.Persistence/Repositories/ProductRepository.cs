@@ -84,7 +84,7 @@ namespace Net7studentportal.Persistence.Repositories
         public List<News> GetNews()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<News> obj = sqlconnection.Query<News>(@"select * from vnk_News where channelID=40 and statusID=1",
+            List<News> obj = sqlconnection.Query<News>(@"select * from vnk_News where channelID=40 and statusID=1 order by ModifiedTime desc",
                 new { }).ToList();
             if (obj != null && obj.Count() > 0)
             {
@@ -128,10 +128,10 @@ namespace Net7studentportal.Persistence.Repositories
         }
         public StudentInfo GetStudentInfo(string Username, string Password)
         {
-            string hash = "";
+            //string hash = "";
 
-            var objHash = new { Username, Password };
-            hash = objHash.GetHashCode().ToString();
+            //var objHash = new { Username, Password };
+            //hash = objHash.GetHashCode().ToString();
 
             using var sqlconnection = _connectionFactory.CreateConnection();
             StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
@@ -156,10 +156,9 @@ ci.CourseIndustryID,
 		left	join vnk_Course co on co.CourseID= ci.CourseID
            left join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
 left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
-            new { @Username = Username, @Password = hash }).FirstOrDefault();
+            new { @Username = Username, @Password = Password }).FirstOrDefault();
             if (obj != null)
             {
-                StudentInfo a = new StudentInfo();
                 return obj;
             }
             else
@@ -386,9 +385,12 @@ left join ModulesType mt on mt.TypeID= m.ModulesTypeID",
         public List<KQHT> GetKQHTByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
+            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.Credits,(u.Lastname+' '+u.Firstname) as fullname,u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
 join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=@UserID
-join Modules m on m.ModulesID= ic.ModulesID",
+join Modules m on m.ModulesID= ic.ModulesID
+left join vnk_User u on u.UserID=us.UserID
+left join ClassUser cu on cu.UserID=u.UserID
+left join Class c on c.ClassID=cu.ClassID",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
             {
@@ -582,7 +584,7 @@ where UserID=@UserID and Paid=0 and sa.Del=0",
         public List<ExamResult> GetExamResult(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ExamResult> obj = sqlconnection.Query<ExamResult>(@"select mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
+            List<ExamResult> obj = sqlconnection.Query<ExamResult>(@"select (u.Lastname+' '+u.Firstname) as fullname,u.Usercode,(select ClassName from(select ClassID from ClassUser where UserID=u.UserID)class) as class ,mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
 mus.SemesterIndex,m.Credits,(select Score from vnk_UserScore where ScoreType=50 and UserID=mus.UserID 
 and IndependentClassID=icu.IndependentClassID) as SGKL1,
 (select Sum(Score)/COUNT(*) from vnk_UserScore where (ScoreType=1 or ScoreType=2 or ScoreType=3 or ScoreType=4 or
@@ -593,6 +595,7 @@ and IndependentClassID=(select IndependentClassID from vnk_IndependentClassUser 
 mus.ScoreFinal,cast(mus.ScoreFinal/10*4 as decimal(2,1)) AS D4,
 fd.XH,fd.SymbolName
 from ModulesUserScore mus
+left join vnk_User u on u.UserID=mus.UserID
 left join Modules m on m.ModulesID=mus.ModulesID
 left join vnk_IndependentClassUser icu on icu.ModulesID=mus.ModulesID AND icu.UserID=mus.UserID
 left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
@@ -610,10 +613,11 @@ where mus.UserID=@UserID",
         public List<ExamByClass> GetExamByClass(int IndependentClassID) 
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
+            List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select m.ModulesName,ic.ClassCode,m.Credits,ic.ClassName,u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
 left join vnk_IndependentClassUser icu on icu.IndependentClassID=ic.IndependentClassID
 left join ModulesUserScore mus on mus.ModulesID=ic.ModulesID and mus.UserID=icu.UserID
 left join vnk_User u on u.UserID=mus.UserID
+left join Modules m on m.ModulesID=ic.ModulesID
 where ic.IndependentClassID=@IndependentClassID",
                 new { @IndependentClassID = IndependentClassID }).ToList();
             if (obj != null)
