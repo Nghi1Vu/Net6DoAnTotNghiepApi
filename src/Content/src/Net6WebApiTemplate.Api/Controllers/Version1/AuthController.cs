@@ -53,6 +53,14 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             var response = await _mediator.Send(command);
             return Ok(response);
         }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/ChangePassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ChangePassword(ChangePasswordCommand change)
+        {
+            var response = await _mediator.Send(change);
+            return Ok(response);
+        }
         [HttpGet]
         [Route(ApiRoutes.Auth.GetIndex)]
         [ProducesResponseType(StatusCodes.Status200OK)]

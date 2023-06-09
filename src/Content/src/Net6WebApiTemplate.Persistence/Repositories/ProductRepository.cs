@@ -1,10 +1,12 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 //using Net6WebApiTemplate.Application.Products.Interfaces;
 using Net6WebApiTemplate.Application.Common.Interfaces;
 using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Application.Shared.Interface;
 using Net6WebApiTemplate.Domain.Entities;
 using Org.BouncyCastle.Utilities;
+using System.Runtime.Intrinsics.X86;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Net7studentportal.Persistence.Repositories
@@ -312,6 +314,25 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                 return 0;
             }
         }
+        public int ChangePassword(string username, string oldpass, string newpass)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
+            var trans = sqlconnection.BeginTransaction();
+            int count = 0;
+            count = sqlconnection.Execute(@"update vnk_User set password= @newpass where username=@username and password=@oldpass",
+           new { @username = username, @oldpass = @oldpass, @newpass = newpass }, trans);
+            if (count>0)
+            {
+                trans.Commit();
+                return 1;
+            }
+            else
+            {
+                trans.Rollback();
+                return 0;
+            }
+        }
         public List<ProgramSemester> GetProgramSemester()
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
@@ -333,20 +354,20 @@ left join ModulesUserScore mus on mus.ModulesID=tbl.ModulesID and UserID=32783
 left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
 group by  mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1",
             new { }).ToList();
-//            select tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS,string_agg(tbl.ModulesTQ, ', <br>') as ModulesTQ,string_agg(tbl.ModulesHT, ', <br>') as ModulesHT, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1 from
+            //            select tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS,string_agg(tbl.ModulesTQ, ', <br>') as ModulesTQ,string_agg(tbl.ModulesHT, ', <br>') as ModulesHT, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1 from
 
-//(select md.ModulesID, md.TimesK, s.SemesterID, pg.MinCreditsLT, pg.MinCreditsTH, pg.MinCreditsK, pg.GroupName, cis.Credits as CreditsS,(select ModulesCode from vnk_Modules where ModulesID = mp.ModulesIDPremise) as ModulesTQ,(select ModulesCode from vnk_Modules where ModulesID = mb.ModulesIDBefore) as ModulesHT, md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID = pm.Semester and TypeID = 0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID = pm.Semester and TypeID = 1) as Credits1  from vnk_Modules md
-//join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
-//left join ProgramGroup pg on pg.ProgramID = p.ProgramID
-//join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
-//left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
-//join Semester s on s.SemesterID = pm.Semester
-//join ModulesType mt on mt.TypeID = md.ModulesTypeID
-//left join ModulesBefore mb on mb.ModulesID = md.ModulesID and isnull(mb.Del,0)= 0
-//left join ModulesPremise mp on mp.ModulesID = md.ModulesID and isnull(mp.Del,0)= 0
-//join CourseIndustrySemester cis on cis.CourseIndustryID = p.CourseIndustryID and cis.TypeID = 0 and cis.SemesterID = pm.Semester
-//group by md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID) as tbl
-//group by tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
+            //(select md.ModulesID, md.TimesK, s.SemesterID, pg.MinCreditsLT, pg.MinCreditsTH, pg.MinCreditsK, pg.GroupName, cis.Credits as CreditsS,(select ModulesCode from vnk_Modules where ModulesID = mp.ModulesIDPremise) as ModulesTQ,(select ModulesCode from vnk_Modules where ModulesID = mb.ModulesIDBefore) as ModulesHT, md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID = pm.Semester and TypeID = 0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID = pm.Semester and TypeID = 1) as Credits1  from vnk_Modules md
+            //join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = 751
+            //left join ProgramGroup pg on pg.ProgramID = p.ProgramID
+            //join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
+            //left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = 100
+            //join Semester s on s.SemesterID = pm.Semester
+            //join ModulesType mt on mt.TypeID = md.ModulesTypeID
+            //left join ModulesBefore mb on mb.ModulesID = md.ModulesID and isnull(mb.Del,0)= 0
+            //left join ModulesPremise mp on mp.ModulesID = md.ModulesID and isnull(mp.Del,0)= 0
+            //join CourseIndustrySemester cis on cis.CourseIndustryID = p.CourseIndustryID and cis.TypeID = 0 and cis.SemesterID = pm.Semester
+            //group by md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID) as tbl
+            //group by tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
             if (obj != null)
             {
                 return obj;
@@ -434,7 +455,7 @@ left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@Us
                 return new List<Certificate>();
             }
         }
-        public List<IndependentClass> GetIC(int ModulesID) 
+        public List<IndependentClass> GetIC(int ModulesID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
@@ -490,7 +511,7 @@ JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@Us
                 return new List<TradeHistory>();
             }
         }
-        public List<Message> GetMessage(int ClassID) 
+        public List<Message> GetMessage(int ClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<Message> obj = sqlconnection.Query<Message>(@"select c.CommentID,c.ParentID,c.OwnerID,c.Content,(select Lastname+' '+Firstname from vnk_User where UserID=c.OwnerID)as fromuser,(select Lastname+' '+Firstname from vnk_User where UserID=c.FieldID)as touser,c.CreatedTime from vnk_Comment c
@@ -506,7 +527,7 @@ join vnk_User u on u.UserID=cu.UserID",
                 return new List<Message>();
             }
         }
-        public List<ChannelAmount> GetChannelAmount(int ClassID) 
+        public List<ChannelAmount> GetChannelAmount(int ClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<ChannelAmount> obj = sqlconnection.Query<ChannelAmount>(@"SELECT Day,ModifiedTime,ChannelAmountID,ChannelAmountName,(SELECT TOP 1 Amount FROM StudentAmount WHERE ChannelAmountID=CA.ChannelAmountID) AS Costs FROM ChannelAmount CA
@@ -539,7 +560,7 @@ order by sa.CreatedTime desc",
                 return new List<StudentAmount>();
             }
         }
-        public List<TTCN> GetTTCNDone(int UserID) 
+        public List<TTCN> GetTTCNDone(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,ic.ClassName,m.Credits,icu.Costs,icu.Status from vnk_IndependentClassUser icu
@@ -560,7 +581,7 @@ where sa.UserID=32783 and sa.Paid=1 and (sa.StatusID =3 or sa.StatusID is null)"
                 return new List<TTCN>();
             }
         }
-        public List<TTCN> GetTTCN(int UserID) 
+        public List<TTCN> GetTTCN(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,m.ModulesName,m.Credits,icu.Costs from vnk_IndependentClassUser icu
@@ -610,7 +631,7 @@ where mus.UserID=@UserID",
                 return new List<ExamResult>();
             }
         }
-        public List<ExamByClass> GetExamByClass(int IndependentClassID) 
+        public List<ExamByClass> GetExamByClass(int IndependentClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select m.ModulesName,ic.ClassCode,m.Credits,ic.ClassName,u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
@@ -629,7 +650,7 @@ where ic.IndependentClassID=@IndependentClassID",
                 return new List<ExamByClass>();
             }
         }
-        public List<ExamCalendar> GetExamCalendar(int UserID) 
+        public List<ExamCalendar> GetExamCalendar(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<ExamCalendar> obj = sqlconnection.Query<ExamCalendar>(@"select d.DepartmentName,ic.ClassName,ic.ClassCode,ept.CreatedTime,(select CampusName from vnk_Campus where CampusID=(select CampusID from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1)))as Campus,(select ExamZoomName from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1))as Room,icur.RegisterID,m.ModulesName,ept.DateExam,et.ExamTimeName from vnk_IndependentClassUser icu
@@ -651,7 +672,7 @@ where icu.UserID=@UserID
                 return new List<ExamCalendar>();
             }
         }
-        public List<TeachCalendar> GetTeachCalendar(int UserID) 
+        public List<TeachCalendar> GetTeachCalendar(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<TeachCalendar> obj = sqlconnection.Query<TeachCalendar>(@"select (select Phone from vnk_User where UserID=
@@ -680,7 +701,7 @@ where icu.UserID=@UserID",
 left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.IndependentClassID and ictp.Del=0
 left join vnk_ExamTime et on et.ExamTimeID= ictp.TimesInday
 where icu.IndependentClassID=@IndependentClassID and icu.UserID=@UserID ",
-                new { @IndependentClassID = IndependentClassID , @UserID = UserID }).ToList();
+                new { @IndependentClassID = IndependentClassID, @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -722,7 +743,7 @@ left join Room r on r.RoomID=rs.RoomID
 left join Campus c on c.CampusID= r.CampusID
 where icu.UserID=32783 and rs.StudyDate>@aDate and rs.StudyDate<@eDate --rs.IndependentClassID=55674
 group by c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
-                new { @aDate = aDate, @eDate= eDate, @UserID= UserID }).ToList();
+                new { @aDate = aDate, @eDate = eDate, @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
