@@ -697,10 +697,13 @@ where icu.UserID=@UserID",
         public List<TeachCalendarDetail> GetTeachCalendarDetail(int IndependentClassID, int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TeachCalendarDetail> obj = sqlconnection.Query<TeachCalendarDetail>(@"select ictp.Day,ictp.Contents,et.Description,ictp.HaveTest from vnk_IndependentClassUser icu 
+            List<TeachCalendarDetail> obj = sqlconnection.Query<TeachCalendarDetail>(@"select (select (Lastname+' '+Firstname) from vnk_User where UserID=(select top 1 UserID from IndependentClassTeacher where 
+IndependentClassID=ic.IndependentClassID))teachername,m.ModulesName,ictp.Day,ictp.Contents,et.Description,ictp.HaveTest from vnk_IndependentClassUser icu 
 left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.IndependentClassID and ictp.Del=0
 left join vnk_ExamTime et on et.ExamTimeID= ictp.TimesInday
-where icu.IndependentClassID=@IndependentClassID and icu.UserID=@UserID ",
+left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
+left join Modules m on m.ModulesID=ic.ModulesID
+where icu.UserID=32783 ",
                 new { @IndependentClassID = IndependentClassID, @UserID = UserID }).ToList();
             if (obj != null)
             {
