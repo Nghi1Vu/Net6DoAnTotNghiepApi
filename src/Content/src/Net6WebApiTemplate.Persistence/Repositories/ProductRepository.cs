@@ -703,7 +703,7 @@ left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.Independ
 left join vnk_ExamTime et on et.ExamTimeID= ictp.TimesInday
 left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
-where icu.UserID=32783 ",
+where icu.UserID=@UserID ",
                 new { @IndependentClassID = IndependentClassID, @UserID = UserID }).ToList();
             if (obj != null)
             {
