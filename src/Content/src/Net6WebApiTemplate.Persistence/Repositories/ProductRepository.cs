@@ -136,7 +136,7 @@ namespace Net7studentportal.Persistence.Repositories
             //hash = objHash.GetHashCode().ToString();
 
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 c.ClassID,
@@ -172,7 +172,7 @@ left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
         public StudentInfo GetStudentInfoByEmail(string email)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 c.ClassID,
