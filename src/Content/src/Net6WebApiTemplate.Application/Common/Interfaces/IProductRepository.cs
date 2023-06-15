@@ -42,5 +42,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy);
         List<LogDKHP> GetLogDKHP(int UserID);
         int ChangePassword(string username, string oldpass, string newpass);
+        string PostTTCN(int UserID, string ttcnid, decimal amount);
     }
 }

@@ -262,7 +262,21 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         {
             var query = new PostRLFormCommand()
             {
-                model= model
+                model = model
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/PostTTCN")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> PostTTCN(PostTTCN model)
+        {
+            var query = new PostTTCNCommand()
+            {
+                model = model
             };
             var result = await _mediator.Send(query);
 

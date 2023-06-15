@@ -6,6 +6,7 @@ using Net6WebApiTemplate.Application.Products.Dto;
 using Net6WebApiTemplate.Application.Shared.Interface;
 using Net6WebApiTemplate.Domain.Entities;
 using Org.BouncyCastle.Utilities;
+using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -314,6 +315,79 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                 return 0;
             }
         }
+        public string PostTTCN(int UserID, string ttcnid, decimal amount)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
+            var trans = sqlconnection.BeginTransaction();
+            try
+            {
+                int obj = 0;
+                string[] id = ttcnid.Split(',');
+                for (int i = 0; i < id.Length; i++)
+                {
+                    if (id[i].IndexOf('k') ==0)
+                    {
+                        TTCN getttcn = GetTTCN(UserID).Where(x => x.id == int.Parse(id[i].Substring(1, id[i].Length-1)) && x.Credits == 0).FirstOrDefault();
+                        amount = amount - getttcn.Costs;
+                        if (amount < 0)
+                        {
+                            return "S";
+                        }
+                    }
+                    else
+                    {
+                        TTCN getttcn = GetTTCN(UserID).Where(x => x.id == int.Parse(id[i]) && x.Credits != 0).FirstOrDefault();
+                        amount = amount - getttcn.Costs;
+                        if (amount < 0)
+                        {
+                            return "S";
+                        }
+                    }
+                }
+                if (amount > 0)
+                {
+                    for (int i = 0; i < id.Length; i++)
+                    {
+                        if (id[i].IndexOf('k') == 0)
+                        {
+                            obj = sqlconnection.Execute(@"update StudentAmount set paid=1 where UserID=@UserID and StudentAmountID=@id and Del=0
+update vnk_User set amount=@amount where UserID=@UserID",
+                  new { UserID = UserID, id = int.Parse(id[i].Substring(1, id[i].Length - 1)), amount=amount }, trans);
+                        }
+                        else
+                        {
+                            obj = sqlconnection.Execute(@"update vnk_IndependentClassUser set paid=1 where IndependentClassID=@id and UserID=@UserID and Del=0
+update vnk_User set amount=@amount where UserID=@UserID",
+                  new { UserID = UserID, id = int.Parse(id[i]), amount = amount }, trans);
+                        }
+                    }
+
+                    if (obj > 1)
+                    {
+                        trans.Commit();
+                        return "Y";
+                    }
+                    else
+                    {
+                        trans.Rollback();
+                        return "N";
+                    }
+                }
+                else
+                {
+                    trans.Rollback();
+                    return "S";
+                }
+                
+            }
+            catch
+            {
+                trans.Rollback();
+                return "N";
+            }
+
+        }
         public int ChangePassword(string username, string oldpass, string newpass)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
@@ -322,7 +396,7 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
             int count = 0;
             count = sqlconnection.Execute(@"update vnk_User set password= @newpass where username=@username and password=@oldpass",
            new { @username = username, @oldpass = @oldpass, @newpass = newpass }, trans);
-            if (count>0)
+            if (count > 0)
             {
                 trans.Commit();
                 return 1;
@@ -584,12 +658,12 @@ where sa.UserID=32783 and sa.Paid=1 and (sa.StatusID =3 or sa.StatusID is null)"
         public List<TTCN> GetTTCN(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,m.ModulesName,m.Credits,icu.Costs from vnk_IndependentClassUser icu
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,m.ModulesName,m.Credits,icu.Costs,icu.IndependentClassID as id from vnk_IndependentClassUser icu
 join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID 
 join Modules m on m.ModulesID=ic.ModulesID
 where icu.Paid=0 and icu.UserID=@UserID and icu.Del=0
 union all
-select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount from StudentAmount sa
+select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount,sa.StudentAmountID from StudentAmount sa
 join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
 where UserID=@UserID and Paid=0 and sa.Del=0",
                 new { @UserID = UserID }).ToList();

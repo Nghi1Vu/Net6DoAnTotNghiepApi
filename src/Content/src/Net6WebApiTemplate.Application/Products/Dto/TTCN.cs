@@ -10,5 +10,6 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public decimal Credits { get; set; }
         public long Costs { get; set; }
         public int? Status { get; set; }
+        public int id { get; set; }
     }
 }
