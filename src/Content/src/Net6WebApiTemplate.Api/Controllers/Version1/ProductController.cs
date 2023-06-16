@@ -282,6 +282,20 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/PostOneDoor")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> PostOneDoor(PostOneDoor model)
+        {
+            var query = new PostOneDoorCommand()
+            {
+                model = model
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
         [HttpGet]
         [Route("/api/v{version:apiVersion}/GetProgramSemester")]
         [ProducesResponseType(StatusCodes.Status200OK)]

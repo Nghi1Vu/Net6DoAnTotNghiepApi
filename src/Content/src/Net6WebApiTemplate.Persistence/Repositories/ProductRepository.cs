@@ -326,9 +326,9 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                 string[] id = ttcnid.Split(',');
                 for (int i = 0; i < id.Length; i++)
                 {
-                    if (id[i].IndexOf('k') ==0)
+                    if (id[i].IndexOf('k') == 0)
                     {
-                        TTCN getttcn = GetTTCN(UserID).Where(x => x.id == int.Parse(id[i].Substring(1, id[i].Length-1)) && x.Credits == 0).FirstOrDefault();
+                        TTCN getttcn = GetTTCN(UserID).Where(x => x.id == int.Parse(id[i].Substring(1, id[i].Length - 1)) && x.Credits == 0).FirstOrDefault();
                         amount = amount - getttcn.Costs;
                         if (amount < 0)
                         {
@@ -353,7 +353,7 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                         {
                             obj = sqlconnection.Execute(@"update StudentAmount set paid=1 where UserID=@UserID and StudentAmountID=@id and Del=0
 update vnk_User set amount=@amount where UserID=@UserID",
-                  new { UserID = UserID, id = int.Parse(id[i].Substring(1, id[i].Length - 1)), amount=amount }, trans);
+                  new { UserID = UserID, id = int.Parse(id[i].Substring(1, id[i].Length - 1)), amount = amount }, trans);
                         }
                         else
                         {
@@ -379,7 +379,60 @@ update vnk_User set amount=@amount where UserID=@UserID",
                     trans.Rollback();
                     return "S";
                 }
-                
+
+            }
+            catch
+            {
+                trans.Rollback();
+                return "N";
+            }
+
+        }
+        public string PostOneDoor(int UserID, string odid, decimal amount)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
+            var trans = sqlconnection.BeginTransaction();
+            try
+            {
+                int obj = 0;
+                string[] id = odid.Split(',');
+                for (int i = 0; i < id.Length; i++)
+                {
+                    ChannelAmount getod = GetChannelAmount(0).Where(x => x.ChannelAmountID == int.Parse(id[i].Split('-')[0])).FirstOrDefault();
+                    amount = amount - (getod.Costs* int.Parse(id[i].Split('-')[1]));
+                    if (amount < 0)
+                    {
+                        return "S";
+                    }
+                }
+                if (amount > 0)
+                {
+                    for (int i = 0; i < id.Length; i++)
+                    {
+                        obj = sqlconnection.Execute(@"insert into StudentAmount(Amount,Quantity,StatusID,UserID,CreatedTime,ChannelAmountID) values(@Amount,@Quantity,
+1,@UserID,GETDATE(),@ChannelAmountID)
+update vnk_User set amount=@amount where UserID=@UserID",
+              new { @UserID = UserID, @ChannelAmountID = int.Parse(id[i].Split('-')[0]), @amount = amount, @Quantity= int.Parse(id[i].Split('-')[1]) }, trans);
+                    }
+
+                    if (obj > 1)
+                    {
+                        trans.Commit();
+                        return "Y";
+                    }
+                    else
+                    {
+                        trans.Rollback();
+                        return "N";
+                    }
+                }
+                else
+                {
+                    trans.Rollback();
+                    return "S";
+                }
+
             }
             catch
             {

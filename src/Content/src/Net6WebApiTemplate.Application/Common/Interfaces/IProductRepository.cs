@@ -43,5 +43,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<LogDKHP> GetLogDKHP(int UserID);
         int ChangePassword(string username, string oldpass, string newpass);
         string PostTTCN(int UserID, string ttcnid, decimal amount);
+        string PostOneDoor(int UserID, string odid, decimal amount);
     }
 }
