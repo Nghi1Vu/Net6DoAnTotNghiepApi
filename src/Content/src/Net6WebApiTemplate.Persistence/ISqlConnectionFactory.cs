@@ -5,5 +5,6 @@ namespace Net6WebApiTemplate.Application.Shared.Interface
     public interface ISqlConnectionFactory
     {
         IDbConnection CreateConnection();
+        IDbConnection CreateConnectionLocal();
     }
 }

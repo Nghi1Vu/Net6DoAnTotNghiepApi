@@ -18,5 +18,9 @@ namespace Net6WebApiTemplate.Persistence
         {
             return new SqlConnection(_configuration.GetConnectionString("Net6WebApiConnection"));
         }
+        public IDbConnection CreateConnectionLocal()
+        {
+            return new SqlConnection(_configuration.GetConnectionString("Net6WebApiConnectionLocal"));
+        }
     }
 }

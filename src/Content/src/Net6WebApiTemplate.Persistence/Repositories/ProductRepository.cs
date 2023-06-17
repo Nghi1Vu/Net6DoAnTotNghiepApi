@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
+using Microsoft.Extensions.Hosting;
 //using Net6WebApiTemplate.Application.Products.Interfaces;
 using Net6WebApiTemplate.Application.Common.Interfaces;
 using Net6WebApiTemplate.Application.Products.Dto;
@@ -319,7 +320,10 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             sqlconnection.Open();
+            using var sqlconnectionLocal = _connectionFactory.CreateConnectionLocal();
+            sqlconnectionLocal.Open();
             var trans = sqlconnection.BeginTransaction();
+            var transLocal = sqlconnectionLocal.BeginTransaction();
             try
             {
                 int obj = 0;
@@ -334,6 +338,11 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                         {
                             return "S";
                         }
+                        else
+                        {
+                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                  new { UserID = UserID, @Description = getttcn.ClassName, @Costs = -getttcn.Costs }, transLocal);
+                        }
                     }
                     else
                     {
@@ -342,6 +351,11 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                         if (amount < 0)
                         {
                             return "S";
+                        }
+                        else
+                        {
+                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                  new { UserID = UserID, @Description = "Thu học phí lớp: " + getttcn.ClassName + " - " + getttcn.ModulesName, @Costs = -getttcn.Costs }, transLocal);
                         }
                     }
                 }
@@ -365,17 +379,20 @@ update vnk_User set amount=@amount where UserID=@UserID",
 
                     if (obj > 1)
                     {
+                        transLocal.Commit();
                         trans.Commit();
                         return "Y";
                     }
                     else
                     {
+                        transLocal.Rollback();
                         trans.Rollback();
                         return "N";
                     }
                 }
                 else
                 {
+                    transLocal.Rollback();
                     trans.Rollback();
                     return "S";
                 }
@@ -383,6 +400,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
             }
             catch
             {
+                transLocal.Rollback();
                 trans.Rollback();
                 return "N";
             }
@@ -392,7 +410,10 @@ update vnk_User set amount=@amount where UserID=@UserID",
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             sqlconnection.Open();
+            using var sqlconnectionLocal = _connectionFactory.CreateConnectionLocal();
+            sqlconnectionLocal.Open();
             var trans = sqlconnection.BeginTransaction();
+            var transLocal = sqlconnectionLocal.BeginTransaction();
             try
             {
                 int obj = 0;
@@ -404,6 +425,11 @@ update vnk_User set amount=@amount where UserID=@UserID",
                     if (amount < 0)
                     {
                         return "S";
+                    }
+                    else
+                    {
+                        sqlconnectionLocal.Execute(@"insert into LogCharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                   new { UserID = UserID, @Description = "Đăng ký DVHC: " + getod.ChannelAmountName + "(SL: " + int.Parse(id[i].Split('-')[1]) + ")", @Costs =  -(getod.Costs * int.Parse(id[i].Split('-')[1])) }, transLocal);
                     }
                 }
                 if (amount > 0)
@@ -418,17 +444,20 @@ update vnk_User set amount=@amount where UserID=@UserID",
 
                     if (obj > 1)
                     {
+                        transLocal.Commit();
                         trans.Commit();
                         return "Y";
                     }
                     else
                     {
+                        transLocal.Rollback();
                         trans.Rollback();
                         return "N";
                     }
                 }
                 else
                 {
+                    transLocal.Rollback();
                     trans.Rollback();
                     return "S";
                 }
@@ -436,6 +465,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
             }
             catch
             {
+                transLocal.Rollback();
                 trans.Rollback();
                 return "N";
             }
@@ -626,8 +656,9 @@ JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@Us
         }
         public List<TradeHistory> GetTradeHistory(int UserID)
         {
-            using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TradeHistory> obj = sqlconnection.Query<TradeHistory>(@"select CreatedTime, iif(LEFT(Costs,1)!='-','+',LEFT(Costs,1)) AS Status,iif(left(Costs,1)='-',SUBSTRING(CAST(Costs AS VARCHAR),1,LEN(CAST(Costs AS VARCHAR))),Costs) AS Costs,Description from LogCharge where UserID=@UserID",
+            using var sqlconnectionLocal = _connectionFactory.CreateConnectionLocal();
+            sqlconnectionLocal.Open();
+            List<TradeHistory> obj = sqlconnectionLocal.Query<TradeHistory>(@"select CreatedTime, iif(LEFT(Costs,1)!='-','+',LEFT(Costs,1)) AS Status,iif(left(Costs,1)='-',SUBSTRING(CAST(Costs AS VARCHAR),1,LEN(CAST(Costs AS VARCHAR))),Costs) AS Costs,Description from LogCharge where UserID=@UserID",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
             {
@@ -871,7 +902,7 @@ left join vnk_User u on u.UserID=ict.UserID
 left join Department d on d.DepartmentID=u.DepartmentID
 left join Room r on r.RoomID=rs.RoomID
 left join Campus c on c.CampusID= r.CampusID
-where icu.UserID=32783 and rs.StudyDate>@aDate and rs.StudyDate<@eDate --rs.IndependentClassID=55674
+where icu.UserID=32783 and rs.StudyDate>=@aDate and rs.StudyDate<=@eDate --rs.IndependentClassID=55674
 group by c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
                 new { @aDate = aDate, @eDate = eDate, @UserID = UserID }).ToList();
             if (obj != null)
