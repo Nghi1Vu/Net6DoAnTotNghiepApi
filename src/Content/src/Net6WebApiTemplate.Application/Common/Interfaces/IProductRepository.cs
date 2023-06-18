@@ -44,5 +44,6 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         int ChangePassword(string username, string oldpass, string newpass);
         string PostTTCN(int UserID, string ttcnid, decimal amount);
         string PostOneDoor(int UserID, string odid, decimal amount);
+        string PostMessage(int UserID, string content);
     }
 }

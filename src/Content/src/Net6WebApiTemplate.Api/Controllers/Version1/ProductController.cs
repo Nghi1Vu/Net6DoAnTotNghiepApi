@@ -423,6 +423,21 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
             return Ok(result);
         }
         [HttpGet]
+        [Route("/api/v{version:apiVersion}/PostMessage")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> PostMessage(int UserID, string content)
+        {
+            var query = new PostMessageCommand()
+            {
+                UserID = UserID,
+                content= content
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
         [Route("/api/v{version:apiVersion}/GetTTCN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

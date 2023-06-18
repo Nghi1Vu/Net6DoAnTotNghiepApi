@@ -685,6 +685,20 @@ join vnk_User u on u.UserID=cu.UserID",
                 return new List<Message>();
             }
         }
+        public string PostMessage(int UserID, string content)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            int obj = sqlconnection.Execute(@"INSERT INTO VNK_COMMENT(OwnerID,Content,CreatedTime) VALUES(@OwerID, @Content,getdate())",
+                new { @OwerID = UserID, @Content=content });
+            if (obj > 0)
+            {
+                return "Y";
+            }
+            else
+            {
+                return "N";
+            }
+        }
         public List<ChannelAmount> GetChannelAmount(int ClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
