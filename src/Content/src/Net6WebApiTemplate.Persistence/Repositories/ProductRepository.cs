@@ -563,7 +563,7 @@ left join ModulesType mt on mt.TypeID= m.ModulesTypeID",
         public List<KQHT> GetKQHTByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.Credits,(u.Lastname+' '+u.Firstname) as fullname,u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
+            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.ModulesID,m.Credits,(u.Lastname+' '+u.Firstname) as fullname,u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
 join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=@UserID
 join Modules m on m.ModulesID= ic.ModulesID
 left join vnk_User u on u.UserID=us.UserID
@@ -615,9 +615,9 @@ left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@Us
         public List<IndependentClass> GetIC(int ModulesID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.IndependentClassID,tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.IndependentClassID,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
 (select rs.TimesInDay,((select cast(count(*) as varchar(50)) from vnk_IndependentClassUser where IndependentClassID=ic.IndependentClassID)+'/'+cast(ic.MaxStudent as varchar(50))) as SSSV , 
- rs.DayStudy,rs.StudyTime,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits from vnk_IndependentClass ic
+ rs.DayStudy,rs.StudyTime,cafci.Amount,r.RoomName,ic.IndependentClassID,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits from vnk_IndependentClass ic
 left join vnk_Modules m on m.ModulesID=ic.ModulesID 
 left join IndependentClassTeacherChange ictc on ictc.IndependentClassID=ic.IndependentClassID
 left JOIN RoomStudy RS ON RS.IndependentClassID=IC.IndependentClassID
@@ -627,8 +627,8 @@ CourseIndustryID=751 and ModulesTypeID=m.ModulesTypeID)
 left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
 where ic.ModulesID=@ModulesID and ic.CourseID=100 
 group by rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
-GROUP BY tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
-group by tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
+GROUP BY tbl.IndependentClassID,tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
+group by tbl2.IndependentClassID,tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
                 new { @ModulesID = ModulesID }).ToList();
             if (obj != null)
             {
@@ -806,7 +806,7 @@ where mus.UserID=@UserID",
         public List<ExamByClass> GetExamByClass(int IndependentClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select m.ModulesName,ic.ClassCode,m.Credits,ic.ClassName,u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
+            List<ExamByClass> obj = sqlconnection.Query<ExamByClass>(@"select m.ModulesID,m.ModulesName,ic.ClassCode,m.Credits,ic.ClassName,u.UserID,u.Usercode,(Lastname+' '+Firstname)as Fullname,mus.Score1,mus.Score2 from IndependentClass ic
 left join vnk_IndependentClassUser icu on icu.IndependentClassID=ic.IndependentClassID
 left join ModulesUserScore mus on mus.ModulesID=ic.ModulesID and mus.UserID=icu.UserID
 left join vnk_User u on u.UserID=mus.UserID

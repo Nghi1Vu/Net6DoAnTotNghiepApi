@@ -623,5 +623,15 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
 
             return Ok(result);
         }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/HandleDKHP")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> HandleDKHP(HandleDKHPCommand handle)
+        {
+            var result = await _mediator.Send(handle);
+
+            return Ok(result);
+        }
     }
 }
