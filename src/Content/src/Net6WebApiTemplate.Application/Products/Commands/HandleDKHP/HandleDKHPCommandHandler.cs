@@ -23,16 +23,21 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
         {
             decimal money = 0;
             List<KQHT> kQHTs = _productRepository.GetKQHTByUser(request.UserID);
-            if(kQHTs != null && kQHTs.Where(x => x.IndependentClassID == request.id).Count() > 0)
+            if(kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0)
             {
-                return "N|Đã đăng ký hoặc đã học học phần này trước đó";
+                return "N|Đã học học phần này trước đó";
             }
             ExamByClass byClasses = _productRepository.GetExamByClass(request.id).FirstOrDefault();
+            List<TKB> tKB = _productRepository.GetTKB(request.UserID, "", "");
             int modul = byClasses.ModulesID;
             List<IndependentClass> classes = _productRepository.GetIC(modul);
             if (classes != null)
             {
                 var cls = classes.Where(x => x.IndependentClassID == request.id).FirstOrDefault();
+                if(tKB.Where(x=>x.termid==19&&x.TimesInDay==cls.TimesInDay && x.DayStudy==cls.DayStudy && (x.StudyTime.Contains(cls.timeday) || cls.timeday.Contains(x.StudyTime))).Count() > 0)
+                {
+                    return "N|Trùng lịch học";
+                }
                 if ((int.Parse(cls.SSSV.Split('/')[1])- int.Parse(cls.SSSV.Split('/')[0])) <= 0)
                 {
                     return "N|Đã đủ số lượng sinh viên đăng ký"; 
