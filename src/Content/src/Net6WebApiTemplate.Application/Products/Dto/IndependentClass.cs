@@ -11,6 +11,7 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public string SSSV { get; set; }
         public int DayStudy { get; set; }
         public string RoomName { get; set; }
+        public string ModulesName { get; set; }
         public string timeday { get; set; }
         public string ClassName { get; set; }
         public string ClassCode { get; set; }
