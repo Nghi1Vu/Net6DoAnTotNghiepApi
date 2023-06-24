@@ -688,6 +688,62 @@ join vnk_User u on u.UserID=cu.UserID",
                 return "N";
             }
         }
+        public string PostIC(int UserID, int IndependentClassID, int Costs, int ModulesID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            var trans= sqlconnection.BeginTransaction();
+            try
+            {
+                int obj = sqlconnection.Execute(@"INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())
+INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,Paid,FormulaID,CreatedTime,OwnerID,PeopleID) VALUES(@IndependentClassID,@ModulesID,@UserID,@Costs,0,2,getdate(),@OwnerID,@PeopleID)",
+                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID, @ModulesID = ModulesID, @Costs = Costs, @PeopleID = UserID }, trans);
+                if (obj > 1)
+                {
+                    trans.Commit();
+                    return "Y";
+
+                }
+                else
+                {
+                    trans.Rollback();
+                    return "N";
+                }
+            }
+            catch
+            {
+                trans.Rollback();
+                return "N";
+            }
+            
+        }
+        public string DeleteDKHP(int UserID, int IndependentClassID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            var trans = sqlconnection.BeginTransaction();
+            try
+            {
+                int obj = sqlconnection.Execute(@"DELETE IndependentClassUser WHERE IndependentClassID=@IndependentClassID
+INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())",
+                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID }, trans);
+                if (obj > 1)
+                {
+                    trans.Commit();
+                    return "Y|Hủy thành công";
+
+                }
+                else
+                {
+                    trans.Rollback();
+                    return "N|Hủy không thành công";
+                }
+            }
+            catch
+            {
+                trans.Rollback();
+                return "N|Hủy không thành công";
+            }
+
+        }
         public List<ChannelAmount> GetChannelAmount(int ClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
@@ -767,7 +823,7 @@ where UserID=@UserID and Paid=0 and sa.Del=0",
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<ExamResult> obj = sqlconnection.Query<ExamResult>(@"select (u.Lastname+' '+u.Firstname) as fullname,u.Usercode,(select ClassName from(select ClassID from ClassUser where UserID=u.UserID)class) as class ,mus.CreatedTime,mus.ModifiedTime,icu.IndependentClassID,m.ModulesCode,('HP'+cast(m.ModulesID as varchar(50))) as PrintCode,m.ModulesName,
-mus.SemesterIndex,m.Credits,(select Score from vnk_UserScore where ScoreType=50 and UserID=mus.UserID 
+mus.SemesterIndex,m.ModulesID,m.Credits,(select Score from vnk_UserScore where ScoreType=50 and UserID=mus.UserID 
 and IndependentClassID=icu.IndependentClassID) as SGKL1,
 (select Sum(Score)/COUNT(*) from vnk_UserScore where (ScoreType=1 or ScoreType=2 or ScoreType=3 or ScoreType=4 or
 ScoreType=5 or ScoreType=6) and UserID=mus.UserID 
@@ -894,7 +950,7 @@ where UserID=@UserID
         public List<TKB> GetTKB(int UserID, string aDate, string eDate)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TKB> obj = sqlconnection.Query<TKB>(@"select ic.termid,c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,(u.Lastname+' '+u.Firstname) as teachername,rs.TimesInDay,rs.DayStudy,rs.StudyDate,string_Agg(rs.StudyTime,',')StudyTime,m.ModulesName,ic.ClassCode,ic.ClassName from RoomStudy rs
+            List<TKB> obj = sqlconnection.Query<TKB>(@"select IC.IndependentClassID,ic.termid,c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,(u.Lastname+' '+u.Firstname) as teachername,rs.TimesInDay,rs.DayStudy,rs.StudyDate,string_Agg(rs.StudyTime,',')StudyTime,m.ModulesName,ic.ClassCode,ic.ClassName from RoomStudy rs
 join vnk_IndependentClassUser icu on icu.IndependentClassID=rs.IndependentClassID
 left join vnk_IndependentClass ic on ic.IndependentClassID=rs.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
@@ -906,7 +962,7 @@ left join Department d on d.DepartmentID=u.DepartmentID
 left join Room r on r.RoomID=rs.RoomID
 left join Campus c on c.CampusID= r.CampusID
 where icu.UserID=32783 and (rs.StudyDate>=@aDate or @aDate is null or @aDate='') and (rs.StudyDate<=@eDate or @eDate is null or @eDate='') --rs.IndependentClassID=55674
-group by c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
+group by IC.IndependentClassID,ic.termid,c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
                 new { @aDate = aDate, @eDate = eDate, @UserID = UserID }).ToList();
             if (obj != null)
             {
@@ -935,6 +991,32 @@ order by icur.CreatedTime desc",
             else
             {
                 return new List<LogDKHP>();
+            }
+        }
+        public List<DKHPByTKB> GetDKHPByTKB(int UserID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<DKHPByTKB> obj = sqlconnection.Query<DKHPByTKB>(@"select tbl.IndependentClassID,(select top 1 RoomName from room where RoomID=
+(select top 1 RoomID from RoomStudy where IndependentClassID=tbl.IndependentClassID)) room
+,(select CampusName from vnk_Campus where CampusID = (select top 1 CampusID from room where RoomID=
+(select top 1 RoomID from RoomStudy where IndependentClassID=tbl.IndependentClassID))) campus,tbl.ClassName,
+tbl.DayStudy,tbl.ModulesName,tbl.TimesInDay,string_agg(tbl.StudyTime,',') timeday
+from (select m.ModulesName,ic.ClassName, rs.DayStudy, rs.TimesInDay,rs.StudyTime ,ic.IndependentClassID
+from vnk_IndependentClassUser icu
+left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
+left join Modules m on m.ModulesID=ic.ModulesID
+left join RoomStudy rs on rs.IndependentClassID=ic.IndependentClassID
+where icu.UserID=@UserID and ic.TermID=19 
+group by m.ModulesName,ic.ClassName, rs.DayStudy, rs.TimesInDay, rs.StudyTime,ic.IndependentClassID) tbl
+group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.TimesInDay",
+                new { @UserID = UserID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<DKHPByTKB>();
             }
         }
         public List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy)

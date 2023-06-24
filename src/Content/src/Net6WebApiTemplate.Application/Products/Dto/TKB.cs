@@ -16,6 +16,7 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public int DayStudy { get; set; }
         public int termid { get; set; }
         public int TimesInDay { get; set; }
+        public int IndependentClassID { get; set; }
         public DateTime StudyDate { get; set; }
     }
 }

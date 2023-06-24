@@ -7,6 +7,7 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public DateTime CreatedTime { get; set; }
         public DateTime ModifiedTime { get; set; }
         public int IndependentClassID { get; set; }
+        public int ModulesID { get; set; }
         public string ModulesCode { get; set; }
         public string fullname { get; set; }
         public string Usercode { get; set; }

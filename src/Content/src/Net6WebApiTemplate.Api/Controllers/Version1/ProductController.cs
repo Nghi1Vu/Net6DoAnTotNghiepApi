@@ -582,7 +582,7 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [Route("/api/v{version:apiVersion}/GetTKB")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTKB(int UserID, string aDate, string eDate)
+        public async Task<IActionResult> GetTKB(int UserID, string? aDate, string? eDate)
         {
             var query = new GetTKBCommand()
             {
@@ -591,6 +591,30 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
                 eDate= eDate
             };
             var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("/api/v{version:apiVersion}/GetDKHPByTKB")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetDKHPByTKB(int UserID)
+        {
+            var query = new GetDKHPByTKBCommand()
+            {
+                UserID = UserID,
+            };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        [HttpPost]
+        [Route("/api/v{version:apiVersion}/DeleteDKHP")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteDKHP(DeleteDKHPCommand command)
+        {
+            var result = await _mediator.Send(command);
 
             return Ok(result);
         }
