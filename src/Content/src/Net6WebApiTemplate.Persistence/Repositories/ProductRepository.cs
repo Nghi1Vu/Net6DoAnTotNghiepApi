@@ -552,13 +552,24 @@ left join ModulesType mt on mt.TypeID= m.ModulesTypeID",
         public List<KQHT> GetKQHTByUser(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.ModulesID,m.Credits,(u.Lastname+' '+u.Firstname) as fullname,u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
-join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=@UserID
-join Modules m on m.ModulesID= ic.ModulesID
-left join vnk_User u on u.UserID=us.UserID
+            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.ModulesID,m.Credits,(u.Lastname+' '+u.Firstname) as fullname,
+u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,
+ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_IndependentClassUser icu
+left join vnk_UserScore us on us.IndependentClassID=icu.IndependentClassID and us.UserID=icu.UserID
+left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
+left join Modules m on m.ModulesID= ic.ModulesID
+left join vnk_User u on u.UserID=icu.UserID
 left join ClassUser cu on cu.UserID=u.UserID
-left join Class c on c.ClassID=cu.ClassID",
+left join Class c on c.ClassID=cu.ClassID
+where icu.UserID=@UserID",
                 new { @UserID = UserID }).ToList();
+//            List<KQHT> obj = sqlconnection.Query<KQHT>(@"select m.ModulesID,m.Credits,(u.Lastname+' '+u.Firstname) as fullname,u.Usercode,c.ClassName as class,ic.IndependentClassID,m.ModulesName,ic.ClassName,ic.ClassCode,us.Score,us.ScoreType from vnk_UserScore us
+//join IndependentClass ic on ic.IndependentClassID=us.IndependentClassID and UserID=@UserID
+//join Modules m on m.ModulesID= ic.ModulesID
+//left join vnk_User u on u.UserID=us.UserID
+//left join ClassUser cu on cu.UserID=u.UserID
+//left join Class c on c.ClassID=cu.ClassID",
+//                new { @UserID = UserID }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -688,15 +699,17 @@ join vnk_User u on u.UserID=cu.UserID",
                 return "N";
             }
         }
-        public string PostIC(int UserID, int IndependentClassID, int Costs, int ModulesID)
+        public string PostIC(int UserID, int IndependentClassID, int Costs, int ModulesID, decimal amount)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
             var trans= sqlconnection.BeginTransaction();
             try
             {
                 int obj = sqlconnection.Execute(@"INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())
-INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,Paid,FormulaID,CreatedTime,OwnerID,PeopleID) VALUES(@IndependentClassID,@ModulesID,@UserID,@Costs,0,2,getdate(),@OwnerID,@PeopleID)",
-                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID, @ModulesID = ModulesID, @Costs = Costs, @PeopleID = UserID }, trans);
+INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,Paid,FormulaID,CreatedTime,OwnerID,PeopleID,ApplicationID) VALUES(@IndependentClassID,@ModulesID,@UserID,@Costs,0,2,getdate(),@OwerID,@PeopleID,1)
+update vnk_User set amount=@amount where UserID=@UserID",
+                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID, @ModulesID = ModulesID, @Costs = Costs, @PeopleID = UserID, @amount= amount }, trans);
                 if (obj > 1)
                 {
                     trans.Commit();
@@ -719,11 +732,12 @@ INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,P
         public string DeleteDKHP(int UserID, int IndependentClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
+            sqlconnection.Open();
             var trans = sqlconnection.BeginTransaction();
             try
             {
-                int obj = sqlconnection.Execute(@"DELETE IndependentClassUser WHERE IndependentClassID=@IndependentClassID
-INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())",
+                int obj = sqlconnection.Execute(@"DELETE vnk_IndependentClassUser WHERE IndependentClassID=@IndependentClassID and UserID=@UserID
+INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime, Del) VALUES(@UserID,@OwerID,@IndependentClassID,getdate(),1)",
                 new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID }, trans);
                 if (obj > 1)
                 {
@@ -870,13 +884,21 @@ where ic.IndependentClassID=@IndependentClassID",
         public List<ExamCalendar> GetExamCalendar(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ExamCalendar> obj = sqlconnection.Query<ExamCalendar>(@"select d.DepartmentName,ic.ClassName,ic.ClassCode,ept.CreatedTime,(select CampusName from vnk_Campus where CampusID=(select CampusID from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1)))as Campus,(select ExamZoomName from Room r where ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1))as Room,icur.RegisterID,m.ModulesName,ept.DateExam,et.ExamTimeName from vnk_IndependentClassUser icu
-join vnk_ExamPlanTime ept on ept.IndependentClassID=icu.IndependentClassID AND ept.CreatedTime = (Select Min(CreatedTime) from vnk_ExamPlanTime as B2 where B2.IndependentClassID=icu.IndependentClassID)
+            List<ExamCalendar> obj = sqlconnection.Query<ExamCalendar>(@"select d.DepartmentName,ic.ClassName,ic.ClassCode,ept.CreatedTime,
+(select CampusName from vnk_Campus where CampusID=
+(select CampusID from Room r where ExamZoomID=
+(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime and Active=1)))
+as Campus,(select ExamZoomName from Room r where 
+ExamZoomID=(select top 1 ExamZoomID from RoomExam where DateExam=ept.DateExam and ExamTime=ept.ExamTime 
+and Active=1))as Room,(select top 1 RegisterID from IndependentClassUserRegister where
+IndependentClassID=icu.IndependentClassID and UserID=icu.UserID) as RegisterID,m.ModulesName,ept.DateExam,et.ExamTimeName 
+from vnk_IndependentClassUser icu
+join vnk_ExamPlanTime ept on ept.IndependentClassID=icu.IndependentClassID AND ept.CreatedTime = 
+(Select Min(CreatedTime) from vnk_ExamPlanTime as B2 where B2.IndependentClassID=icu.IndependentClassID)
 join vnk_ExamTime et on et.ExamTimeID=ept.ExamTime
 left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
 left join Modules m on m.ModulesID=icu.ModulesID
 left join vnk_Department d on d.DepartmentID=ic.DepartmentID
-left join IndependentClassUserRegister icur on icur.IndependentClassID=icu.IndependentClassID and icur.UserID=icu.UserID
 where icu.UserID=@UserID
 ",
                 new { @UserID = UserID }).ToList();
@@ -961,7 +983,7 @@ left join vnk_User u on u.UserID=ict.UserID
 left join Department d on d.DepartmentID=u.DepartmentID
 left join Room r on r.RoomID=rs.RoomID
 left join Campus c on c.CampusID= r.CampusID
-where icu.UserID=32783 and (rs.StudyDate>=@aDate or @aDate is null or @aDate='') and (rs.StudyDate<=@eDate or @eDate is null or @eDate='') --rs.IndependentClassID=55674
+where icu.UserID=@UserID and (rs.StudyDate>=@aDate or @aDate is null or @aDate='') and (rs.StudyDate<=@eDate or @eDate is null or @eDate='') --rs.IndependentClassID=55674
 group by IC.IndependentClassID,ic.termid,c.CampusName,r.RoomName,d.DepartmentNameSort,u.Phone,u.Lastname,u.Firstname,rs.TimesInDay,rs.DayStudy,rs.StudyDate,m.ModulesName,ic.ClassCode,ic.ClassName",
                 new { @aDate = aDate, @eDate = eDate, @UserID = UserID }).ToList();
             if (obj != null)

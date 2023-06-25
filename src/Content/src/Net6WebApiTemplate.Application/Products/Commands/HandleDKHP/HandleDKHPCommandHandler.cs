@@ -27,36 +27,43 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             List<ExamResult> exams = _productRepository.GetExamResult(request.UserID);
             if(kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0)
             {
-                return "N|Đã học học phần này trước đó";
+                return "N|Đã đăng ký hoặc đã học học phần này trước đó";
             }
             ExamByClass byClasses = _productRepository.GetExamByClass(request.id).FirstOrDefault();
-            List<TKB> tKB = _productRepository.GetTKB(request.UserID, "", "");
+            List<DKHPByTKB> tKB = _productRepository.GetDKHPByTKB(request.UserID);
             int modul = byClasses.ModulesID;
             List<IndependentClass> classes = _productRepository.GetIC(modul);
             List<ProgramSemester> programs = _productRepository.GetProgramSemester();
             if (programs.Count > 0)
             {
-                string[] mdht = programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT.Split(',');
-                string[] mdtq = programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTQ.Split(',');
-                for(int i = 0; i < mdht.Length; i++)
+                string[] mdht = !string.IsNullOrEmpty(programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT)? programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT.Split(','):new string[0];
+                string[] mdtq = !string.IsNullOrEmpty(programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTQ)? programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTQ.Split(',') : new string[0] ;
+                if (mdht.Length > 0)
                 {
-                    if (exams != null && exams.Where(x => x.ModulesID == int.Parse(mdht[i].Trim())&& x.ScoreFinal>4).Count() <= 0)
+                    for (int i = 0; i < mdht.Length; i++)
                     {
-                        return "N|Cần học học phần học trước của học phần này";
+                        if (exams != null && exams.Where(x => x.ModulesCode == mdht[i].Trim() && x.ScoreFinal > 4).Count() <= 0)
+                        {
+                            return "N|Cần học học phần học trước của học phần này";
+                        }
                     }
                 }
-                for (int i = 0; i < mdtq.Length; i++)
+                if (mdtq.Length > 0)
                 {
-                    if (exams != null && exams.Where(x => x.ModulesID == int.Parse(mdtq[i].Trim()) && x.ScoreFinal > 4).Count() <= 0)
+                    for (int i = 0; i < mdtq.Length; i++)
                     {
-                        return "N|Cần học hết các học phần tiên quyết của học phần này";
+                        if (exams != null && exams.Where(x => x.ModulesID == int.Parse(mdtq[i].Trim()) && x.ScoreFinal > 4).Count() <= 0)
+                        {
+                            return "N|Cần học hết các học phần tiên quyết của học phần này";
+                        }
                     }
                 }
+                
             }
             if (classes != null)
             {
                 var cls = classes.Where(x => x.IndependentClassID == request.id).FirstOrDefault();
-                if(tKB.Where(x=>x.termid==19&&x.TimesInDay==cls.TimesInDay && x.DayStudy==cls.DayStudy && (x.StudyTime.Contains(cls.timeday) || cls.timeday.Contains(x.StudyTime))).Count() > 0)
+                if(tKB.Where(x=>x.TimesInDay==cls.TimesInDay && x.DayStudy==cls.DayStudy && (x.timeday.Contains(cls.timeday) || cls.timeday.Contains(x.timeday))).Count() > 0)
                 {
                     return "N|Trùng lịch học";
                 }
@@ -66,13 +73,14 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
                     return "N|Đã đủ số lượng sinh viên đăng ký"; 
                 }
                 money = request.amount - cls.Amount;
-                kq = _productRepository.PostIC(request.UserID, request.id, cls.Amount, request.mdid);
+                if (money <= 0)
+                {
+                    return "N|Số dư không đủ";
+                }
+                kq = _productRepository.PostIC(request.UserID, request.id, cls.Amount, request.mdid,money);
                
             }
-            if (money <= 0)
-            {
-                return "N|Số dư không đủ"; 
-            }
+            
             if (kq == "Y")
             {
                 return "Y|Thành công";

@@ -45,7 +45,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         string PostTTCN(int UserID, string ttcnid, decimal amount);
         string PostOneDoor(int UserID, string odid, decimal amount);
         string PostMessage(int UserID, string content);
-        string PostIC(int UserID, int IndependentClassID, int Costs, int ModulesID);
+        string PostIC(int UserID, int IndependentClassID, int Costs, int ModulesID,decimal amount);
         List<DKHPByTKB> GetDKHPByTKB(int UserID);
         string DeleteDKHP(int UserID, int IndependentClassID);
     }
