@@ -21,7 +21,7 @@ public class GetStudentClassCommandHandler : IRequestHandler<GetStudentClassComm
     {
         try
         {
-            List<StudenClass> news = _productRepository.GetStudentClass();
+            List<StudenClass> news = _productRepository.GetStudentClass(request.ClassID);
             return news;
         }
         catch

@@ -10,7 +10,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         bool SignIn(string Username, string Password);
         bool LoginWithEmail(string email);
         List<News> GetNews();
-        List<StudenClass> GetStudentClass();
+        List<StudenClass> GetStudentClass(int ClassID);
         News GetNewsDetail(int NewsId);
         StudentInfo GetStudentInfo(string Username, string Password);
         StudentInfo GetStudentInfoByEmail(string email);

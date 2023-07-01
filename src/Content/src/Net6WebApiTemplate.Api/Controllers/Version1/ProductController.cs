@@ -154,11 +154,11 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [Route("/api/v{version:apiVersion}/GetStudentClass")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetStudentClass()
+        public async Task<IActionResult> GetStudentClass(int ClassID)
         {
             var query = new GetStudentClassCommand()
             {
-
+                ClassID= ClassID
             };
             var rsNews = await _mediator.Send(query);
 

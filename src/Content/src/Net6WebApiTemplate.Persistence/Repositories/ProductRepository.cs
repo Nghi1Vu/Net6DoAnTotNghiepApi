@@ -115,11 +115,11 @@ namespace Net7studentportal.Persistence.Repositories
             }
 
         }
-        public List<StudenClass> GetStudentClass()
+        public List<StudenClass> GetStudentClass(int ClassID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<StudenClass> obj = sqlconnection.Query<StudenClass>(@"select Usercode, (Lastname+' '+Firstname) Username, Address, Phone,Email from ClassUser cr join vnk_User vr on cr.UserID=vr.UserID and cr.ClassID=803 order by Firstname",
-                new { }).ToList();
+            List<StudenClass> obj = sqlconnection.Query<StudenClass>(@"select Usercode, (Lastname+' '+Firstname) Username, Address, Phone,Email from ClassUser cr join vnk_User vr on cr.UserID=vr.UserID and cr.ClassID=@ClassID order by Firstname",
+                new { @ClassID= ClassID }).ToList();
             if (obj != null && obj.Count() > 0)
             {
                 return obj;
@@ -841,7 +841,7 @@ mus.SemesterIndex,m.ModulesID,m.Credits,(select Score from vnk_UserScore where S
 and IndependentClassID=icu.IndependentClassID) as SGKL1,
 (select Sum(Score)/COUNT(*) from vnk_UserScore where (ScoreType=1 or ScoreType=2 or ScoreType=3 or ScoreType=4 or
 ScoreType=5 or ScoreType=6) and UserID=mus.UserID 
-and IndependentClassID=(select IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID AND UserID=mus.UserID)) as TBKTTK
+and IndependentClassID=(select top 1 IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID AND UserID=mus.UserID)) as TBKTTK
 ,(SELECT Score FROM vnk_UserEnScore WHERE NoID=(select NoID from vnk_UserNoID where UserID=mus.UserID and ExamPlanTimeID=
 (select TOP 1 ExamPlanTimeID from vnk_ExamPlanTime where IndependentClassID=icu.IndependentClassID))) AS EXAM,
 mus.ScoreFinal,cast(mus.ScoreFinal/10*4 as decimal(2,1)) AS D4,
