@@ -13,7 +13,7 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public string ModulesName { get; set; }
         public string ClassName { get; set; }
         public string ClassCode { get; set; }
-        public int Score { get; set; }
+        public decimal Score { get; set; }
         public int ScoreType { get; set; }
         public decimal Credits { get; set; }
       

@@ -138,7 +138,7 @@ namespace Net7studentportal.Persistence.Repositories
             //hash = objHash.GetHashCode().ToString();
 
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select fd.XH,vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 c.ClassID,
@@ -160,7 +160,8 @@ um.TotalCredits,
 			left join UserMark um on um.UserID=vr.UserID
 		left	join vnk_Course co on co.CourseID= ci.CourseID
            left join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
-left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
+left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID
+left join FormulaDetail fd on fd.FormulaID=co.FormulaID and um.TBCTL/4*10>=fd.StartScore and um.TBCTL/4*10<=fd.EndScore",
             new { @Username = Username, @Password = Password }).FirstOrDefault();
             if (obj != null)
             {
@@ -175,7 +176,7 @@ left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
         public StudentInfo GetStudentInfoByEmail(string email)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
+            StudentInfo obj = sqlconnection.Query<StudentInfo>(@"select fd.XH,vr.Amount,vr.UserId, (vr.Lastname + ' ' + vr.Firstname) Fullname, vr.Usercode,
 			(select (Lastname + ' ' + Firstname) Fullname from vnk_User where UserID= ct.UserID) as TeacherName,
 			c.ClassName,
 c.ClassID,
@@ -197,7 +198,8 @@ um.TotalCredits,
 			left join UserMark um on um.UserID=vr.UserID
 		left	join vnk_Course co on co.CourseID= ci.CourseID
            left join CourseIndustryDetail cid on cid.CourseIndustryID = ci.CourseIndustryID
-left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID",
+left join TranningLevel tl on tl.TranningLevelID=i.TranningLevelID
+left join FormulaDetail fd on fd.FormulaID=co.FormulaID and um.TBCTL/4*10>=fd.StartScore and um.TBCTL/4*10<=fd.EndScore",
             new { @email = email }).FirstOrDefault();
             if (obj != null)
             {
@@ -846,7 +848,7 @@ ScoreType=5 or ScoreType=6) and UserID=mus.UserID
 and IndependentClassID=(select top 1 IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID AND UserID=mus.UserID)) as TBKTTK
 ,(SELECT Score FROM vnk_UserEnScore WHERE NoID=(select NoID from vnk_UserNoID where UserID=mus.UserID and ExamPlanTimeID=
 (select TOP 1 ExamPlanTimeID from vnk_ExamPlanTime where IndependentClassID=icu.IndependentClassID))) AS EXAM,
-mus.ScoreFinal,cast(mus.ScoreFinal/10*4 as decimal(2,1)) AS D4,
+mus.ScoreFinal,ROUND((cast(mus.ScoreFinal/10*4 as FLOAT)),1) AS D4,
 fd.XH,fd.SymbolName
 from ModulesUserScore mus
 left join vnk_User u on u.UserID=mus.UserID
