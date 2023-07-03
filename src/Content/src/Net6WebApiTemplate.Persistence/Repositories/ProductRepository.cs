@@ -148,6 +148,7 @@ tl.TranningLevelName,
 ci.CourseIndustryID,
 			d.DepartmentName,
 			um.TBCTL,
+um.TotalCredits,
             vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
 			join ClassUser cu on cu.UserID=vr.UserID and vr.Username = @Username and vr.Password = @Password
@@ -184,6 +185,7 @@ tl.TranningLevelName,
 ci.CourseIndustryID,
 			d.DepartmentName,
 			um.TBCTL,
+um.TotalCredits,
             vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
 			join ClassUser cu on cu.UserID=vr.UserID and vr.email = @email
