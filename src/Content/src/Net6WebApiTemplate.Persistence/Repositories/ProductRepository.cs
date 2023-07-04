@@ -189,7 +189,7 @@ ci.CourseIndustryID,
 um.TotalCredits,
             vr.Email, vr.Phone, vr.[Address], vr.Images, co.CourseName,co.CourseCode,cid.Credits
             from vnk_User vr
-			join ClassUser cu on cu.UserID=vr.UserID and vr.email = @email
+			join ClassUser cu on cu.UserID=vr.UserID and (vr.email = @email or vr.Usercode=@email)
 			left join Class c on c.ClassID= cu.ClassID
 		 left	join ClassTeacher ct on ct.ClassID = cu.ClassID
            left join CourseIndustry ci on ci.CourseIndustryID = c.CourseIndustryID
