@@ -19,14 +19,14 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<RLSemester> GetRLSemester(int UserId);
         List<RLForm> GetRLForm();
         int PostRLForm(PostRLForm model);
-        List<ProgramSemester> GetProgramSemester();
+        List<ProgramSemester> GetProgramSemester(int CourseIndustryID, int CourseID,int UserID);
         List<ModuleDetail> GetModuleDetail(int ModulesID);
-        List<IndependentClass> GetIC(int ModulesID);
+        List<IndependentClass> GetIC(int ModulesID,int CourseID, int CourseIndustryID);
         List<KQHT> GetKQHTByClass(int IndependentClassID);
         List<KQHT> GetKQHTByUser(int UserID);
         List<TradeHistory> GetTradeHistory(int UserID);
         List<DsGtHs> GetDsGtHs(int UserID);
-        List<Certificate> GetCertificateByUser(int UserID);
+        List<Certificate> GetCertificateByUser(int UserID, int CourseIndustryID);
         List<Message> GetMessage(int ClassID);
         List<ChannelAmount> GetChannelAmount(int ClassID);
         List<StudentAmount> GetStudentAmount(int UserID);
@@ -39,7 +39,7 @@ namespace Net6WebApiTemplate.Application.Common.Interfaces
         List<TeachCalendarDetail> GetTeachCalendarDetail(int IndependentClassID, int UserID);
         List<TBCHKModel> GetTBCHK(int UserID);
         List<TKB> GetTKB(int UserID, string aDate, string eDate);
-        List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy);
+        List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy,int CourseIndustryID,int CourseID);
         List<LogDKHP> GetLogDKHP(int UserID);
         int ChangePassword(string username, string oldpass, string newpass);
         string PostTTCN(int UserID, string ttcnid, decimal amount);

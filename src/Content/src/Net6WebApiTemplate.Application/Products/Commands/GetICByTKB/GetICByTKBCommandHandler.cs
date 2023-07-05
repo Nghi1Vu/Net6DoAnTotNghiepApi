@@ -21,7 +21,7 @@ public class GetICByTKBCommandHandler : IRequestHandler<GetICByTKBCommand, List<
     {
         try
         {
-            List<IndependentClass> result = _productRepository.GetICByTKB(request.TimesInDay,request.DayStudy);
+            List<IndependentClass> result = _productRepository.GetICByTKB(request.TimesInDay,request.DayStudy,request.CourseIndustryID,request.CourseID);
             return result;
         }
         catch

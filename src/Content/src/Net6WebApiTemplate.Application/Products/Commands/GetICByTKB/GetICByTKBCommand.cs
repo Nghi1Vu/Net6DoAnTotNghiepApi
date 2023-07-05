@@ -5,4 +5,6 @@ public class GetICByTKBCommand : IRequest<List<IndependentClass>>
 {
     public int DayStudy { get; set; }
     public int TimesInDay { get; set; }
+    public int CourseIndustryID { get; set; }
+    public int CourseID { get; set; }
 }

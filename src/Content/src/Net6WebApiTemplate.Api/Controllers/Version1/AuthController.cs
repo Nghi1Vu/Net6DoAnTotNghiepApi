@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Net6WebApiTemplate.Api.Contracts.Version1.Requests;
 using Net6WebApiTemplate.Api.Routes.Version1;
@@ -56,6 +57,7 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [HttpPost]
         [Route("/api/v{version:apiVersion}/ChangePassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = "JwtBaerer")]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommand change)
         {
             var response = await _mediator.Send(change);

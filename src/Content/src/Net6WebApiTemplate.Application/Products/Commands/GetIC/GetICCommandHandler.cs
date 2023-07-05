@@ -21,7 +21,7 @@ public class GetICCommandHandler : IRequestHandler<GetICCommand, List<Independen
     {
         try
         {
-            List<IndependentClass> result = _productRepository.GetIC(request.ModulesID);
+            List<IndependentClass> result = _productRepository.GetIC(request.ModulesID,request.CourseID,request.CourseIndustryID);
             return result;
         }
         catch

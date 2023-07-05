@@ -1,9 +1,11 @@
 using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Net6WebApiTemplate.Api.Filters;
 using Net6WebApiTemplate.Api.Options;
@@ -18,6 +20,7 @@ using NLog.Web;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
@@ -180,7 +183,23 @@ builder.Services.AddVersionedApiExplorer(options =>
     options.SubstituteApiVersionInUrl = true;
 
 });
-
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .Build();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer("JwtBaerer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration.GetValue<string>("issuer"),
+            ValidAudience = configuration.GetValue<string>("audience"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("SecretKey")))
+        };
+    });
 //-- Configure the HTTP request pipeline.
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Local") || app.Environment.IsEnvironment("Test"))

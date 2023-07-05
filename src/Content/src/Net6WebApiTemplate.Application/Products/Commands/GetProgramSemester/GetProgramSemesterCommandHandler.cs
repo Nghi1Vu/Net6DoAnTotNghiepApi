@@ -21,7 +21,7 @@ public class GetProgramSemesterCommandHandler : IRequestHandler<GetProgramSemest
     {
         try
         {
-            List<ProgramSemester> result = _productRepository.GetProgramSemester();
+            List<ProgramSemester> result = _productRepository.GetProgramSemester(request.CourseIndustryID,request.CourseID,request.UserID);
             return result;
         }
         catch

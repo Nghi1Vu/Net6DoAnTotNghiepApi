@@ -21,7 +21,7 @@ public class GetCertificateByUserCommandHandler : IRequestHandler<GetCertificate
     {
         try
         {
-            List<Certificate> result = _productRepository.GetCertificateByUser(request.UserID);
+            List<Certificate> result = _productRepository.GetCertificateByUser(request.UserID,request.CourseIndustryID);
             return result;
         }
         catch

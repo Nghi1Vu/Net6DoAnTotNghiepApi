@@ -32,8 +32,8 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             ExamByClass byClasses = _productRepository.GetExamByClass(request.id).FirstOrDefault();
             List<DKHPByTKB> tKB = _productRepository.GetDKHPByTKB(request.UserID);
             int modul = byClasses.ModulesID;
-            List<IndependentClass> classes = _productRepository.GetIC(modul);
-            List<ProgramSemester> programs = _productRepository.GetProgramSemester();
+            List<IndependentClass> classes = _productRepository.GetIC(modul,request.CourseID,request.CourseIndustryID);
+            List<ProgramSemester> programs = _productRepository.GetProgramSemester(request.CourseIndustryID,request.CourseID,request.UserID);
             if (programs.Count > 0)
             {
                 string[] mdht = !string.IsNullOrEmpty(programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT)? programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT.Split(','):new string[0];
