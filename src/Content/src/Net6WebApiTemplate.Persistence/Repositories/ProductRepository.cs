@@ -502,7 +502,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
         public List<ProgramSemester> GetProgramSemester(int CourseIndustryID, int CourseID,int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select mus.Score1,mus.ScoreFinal,ROUND((cast(mus.ScoreFinal/10*4 as FLOAT)),1) AS D4,
+            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select mus.Score1,mus.ScoreFinal,ROUND((cast(fd.d4 as FLOAT)),1) AS D4,
 fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS,string_agg(tbl.ModulesTQ,', <br>')as ModulesTQ,string_agg(tbl.ModulesHT,', <br>') as ModulesHT, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1,iif(tbl.chk=1, 'x','') chked  from
 
 (select (select top 1 1 from IndependentClass where ModulesID=md.ModulesID AND CourseID = @CourseID
@@ -519,7 +519,7 @@ join CourseIndustrySemester cis on cis.CourseIndustryID = p.CourseIndustryID and
 group by md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID) as tbl
 left join ModulesUserScore mus on mus.ModulesID=tbl.ModulesID and UserID=@UserID
 left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
-group by  tbl.chk,mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
+group by  fd.d4,tbl.chk,mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
 order by tbl.SemesterID",
             new { @CourseIndustryID = CourseIndustryID, @CourseID= CourseID , @TermID = _configuration["TERMID"].ToString(), @UserID= UserID }).ToList();
            
@@ -846,7 +846,7 @@ ScoreType=5 or ScoreType=6) and UserID=mus.UserID
 and IndependentClassID=(select top 1 IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID AND UserID=mus.UserID)),1) as TBKTTK
 ,ROUND((SELECT Score FROM vnk_UserEnScore WHERE NoID=(select NoID from vnk_UserNoID where UserID=mus.UserID and ExamPlanTimeID=
 (select TOP 1 ExamPlanTimeID from vnk_ExamPlanTime where IndependentClassID=icu.IndependentClassID))),1) AS EXAM,
-ROUND(mus.ScoreFinal,1) ScoreFinal,ROUND((cast(mus.ScoreFinal/10*4 as FLOAT)),1) AS D4,
+ROUND(mus.ScoreFinal,1) ScoreFinal,ROUND((cast(fd.d4 as FLOAT)),1) AS D4,
 fd.XH,fd.SymbolName
 from ModulesUserScore mus
 left join vnk_User u on u.UserID=mus.UserID
