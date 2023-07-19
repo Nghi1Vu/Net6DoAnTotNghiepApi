@@ -709,9 +709,8 @@ join vnk_User u on u.UserID=cu.UserID",
             try
             {
                 int obj = sqlconnection.Execute(@"INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())
-INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,Paid,FormulaID,CreatedTime,OwnerID,PeopleID,ApplicationID) VALUES(@IndependentClassID,@ModulesID,@UserID,@Costs,0,2,getdate(),@OwerID,@PeopleID,1)
-update vnk_User set amount=@amount where UserID=@UserID",
-                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID, @ModulesID = ModulesID, @Costs = Costs, @PeopleID = UserID, @amount= amount }, trans);
+INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,Paid,FormulaID,CreatedTime,OwnerID,PeopleID,ApplicationID) VALUES(@IndependentClassID,@ModulesID,@UserID,@Costs,0,2,getdate(),@OwerID,@PeopleID,1)",
+                new { @UserID = UserID, @OwerID = UserID, @IndependentClassID = IndependentClassID, @ModulesID = ModulesID, @Costs = Costs, @PeopleID = UserID }, trans);
                 if (obj > 1)
                 {
                     trans.Commit();
@@ -1024,15 +1023,15 @@ order by icur.CreatedTime desc",
 (select top 1 RoomID from RoomStudy where IndependentClassID=tbl.IndependentClassID)) room
 ,(select CampusName from vnk_Campus where CampusID = (select top 1 CampusID from room where RoomID=
 (select top 1 RoomID from RoomStudy where IndependentClassID=tbl.IndependentClassID))) campus,tbl.ClassName,
-tbl.DayStudy,tbl.ModulesName,tbl.TimesInDay,string_agg(tbl.StudyTime,',') timeday
-from (select m.ModulesName,ic.ClassName, rs.DayStudy, rs.TimesInDay,rs.StudyTime ,ic.IndependentClassID
+tbl.DayStudy,tbl.ModulesName,tbl.ModulesId,tbl.TimesInDay,string_agg(tbl.StudyTime,',') timeday
+from (select m.ModulesName,m.ModulesId,ic.ClassName, rs.DayStudy, rs.TimesInDay,rs.StudyTime ,ic.IndependentClassID
 from vnk_IndependentClassUser icu
 left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
 left join RoomStudy rs on rs.IndependentClassID=ic.IndependentClassID
 where icu.UserID=@UserID and ic.TermID=@TermID 
-group by m.ModulesName,ic.ClassName, rs.DayStudy, rs.TimesInDay, rs.StudyTime,ic.IndependentClassID) tbl
-group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.TimesInDay",
+group by m.ModulesName,m.ModulesId,ic.ClassName, rs.DayStudy, rs.TimesInDay, rs.StudyTime,ic.IndependentClassID) tbl
+group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.ModulesId,tbl.TimesInDay",
                 new { @UserID = UserID , @TermID = _configuration["TERMID"].ToString() }).ToList();
             if (obj != null)
             {

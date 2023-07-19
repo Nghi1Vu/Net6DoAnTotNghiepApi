@@ -25,7 +25,8 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             decimal money = 0;
             List<KQHT> kQHTs = _productRepository.GetKQHTByUser(request.UserID);
             List<ExamResult> exams = _productRepository.GetExamResult(request.UserID);
-            if(kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0)
+            List<ProgramSemester> CHEKmd = _productRepository.GetProgramSemester(request.CourseIndustryID, request.CourseID, request.UserID);
+            if ((kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0) || (CHEKmd != null && CHEKmd.Where(x => x.ModulesID == request.mdid && (x.ScoreFinal != null || x.D4 != null ||x.Score1!=null||x.XH!=null)).Count()>0))
             {
                 return "N|Đã đăng ký hoặc đã học học phần này trước đó";
             }
@@ -72,11 +73,11 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
                 {
                     return "N|Đã đủ số lượng sinh viên đăng ký"; 
                 }
-                money = request.amount - cls.Amount;
-                if (money <= 0)
-                {
-                    return "N|Số dư không đủ";
-                }
+                //money = request.amount - cls.Amount;
+                //if (money <= 0)
+                //{
+                //    return "N|Số dư không đủ";
+                //}
                 kq = _productRepository.PostIC(request.UserID, request.id, cls.Amount, request.mdid,money);
                
             }
