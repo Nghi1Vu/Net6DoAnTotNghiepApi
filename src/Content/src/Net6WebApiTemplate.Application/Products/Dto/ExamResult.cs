@@ -33,9 +33,9 @@ namespace Net6WebApiTemplate.Application.Products.Dto
         public string Fullname { get; set; }
         public int UserID { get; set; }
         public int ModulesID { get; set; }
-        public decimal Score1 { get; set; }
+        public decimal? Score1 { get; set; }
         public decimal Credits { get; set; }
-        public decimal Score2 { get; set; }
+        public decimal? Score2 { get; set; }
 
     }
 }

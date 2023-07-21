@@ -17,16 +17,35 @@ namespace Net7studentportal.Persistence.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly ISqlConnectionFactory _connectionFactory;
-        private readonly IConfiguration _configuration;
+        private IConfiguration _configuration;
 
-
+        public class AppSetting
+        {
+            public int Id { get; set; }
+            public string Title { get; set; }
+            public string ValueOf { get; set; }
+        }
         public ProductRepository(ISqlConnectionFactory connectionFactory, IConfiguration configuration)
         {
             _connectionFactory = connectionFactory;
-            _configuration = configuration;
+            try
+            {
+                _configuration = configuration;
+                _configuration["TERMID"] = GetAppSettings()[0].ValueOf;
+            }
+            catch
+            {
+                _configuration = configuration;
+            }
 
         }
-
+        public List<AppSetting> GetAppSettings()
+        {
+            using var sqlconnectionLocal = _connectionFactory.CreateConnectionLocal();
+            sqlconnectionLocal.Open();
+            var TERMID = sqlconnectionLocal.Query<AppSetting>("Select * from AppSetting").ToList();
+            return TERMID;
+        }
         //public async Task<Product?> GetById(long id)
         //{
         //    var sql = @"SELECT ProductID, ProductName, ProductDescription, ProductPrice
@@ -124,7 +143,7 @@ namespace Net7studentportal.Persistence.Repositories
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<StudenClass> obj = sqlconnection.Query<StudenClass>(@"select Usercode, (Lastname+' '+Firstname) Username, Address, Phone,Email from ClassUser cr join vnk_User vr on cr.UserID=vr.UserID and cr.ClassID=@ClassID order by Firstname",
-                new { @ClassID= ClassID }).ToList();
+                new { @ClassID = ClassID }).ToList();
             if (obj != null && obj.Count() > 0)
             {
                 return obj;
@@ -430,7 +449,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
                 for (int i = 0; i < id.Length; i++)
                 {
                     ChannelAmount getod = GetChannelAmount(0).Where(x => x.ChannelAmountID == int.Parse(id[i].Split('-')[0])).FirstOrDefault();
-                    amount = amount - (getod.Costs* int.Parse(id[i].Split('-')[1]));
+                    amount = amount - (getod.Costs * int.Parse(id[i].Split('-')[1]));
                     if (amount < 0)
                     {
                         return "S";
@@ -438,7 +457,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
                     else
                     {
                         sqlconnectionLocal.Execute(@"insert into LogCharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
-                   new { UserID = UserID, @Description = "Đăng ký DVHC: " + getod.ChannelAmountName + "(SL: " + int.Parse(id[i].Split('-')[1]) + ")", @Costs =  -(getod.Costs * int.Parse(id[i].Split('-')[1])) }, transLocal);
+                   new { UserID = UserID, @Description = "Đăng ký DVHC: " + getod.ChannelAmountName + "(SL: " + int.Parse(id[i].Split('-')[1]) + ")", @Costs = -(getod.Costs * int.Parse(id[i].Split('-')[1])) }, transLocal);
                     }
                 }
                 if (amount > 0)
@@ -448,7 +467,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
                         obj = sqlconnection.Execute(@"insert into StudentAmount(Amount,Quantity,StatusID,UserID,CreatedTime,ChannelAmountID) values(@Amount,@Quantity,
 1,@UserID,GETDATE(),@ChannelAmountID)
 update vnk_User set amount=@amount where UserID=@UserID",
-              new { @UserID = UserID, @ChannelAmountID = int.Parse(id[i].Split('-')[0]), @amount = amount, @Quantity= int.Parse(id[i].Split('-')[1]) }, trans);
+              new { @UserID = UserID, @ChannelAmountID = int.Parse(id[i].Split('-')[0]), @amount = amount, @Quantity = int.Parse(id[i].Split('-')[1]) }, trans);
                     }
 
                     if (obj > 1)
@@ -499,7 +518,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
                 return 0;
             }
         }
-        public List<ProgramSemester> GetProgramSemester(int CourseIndustryID, int CourseID,int UserID)
+        public List<ProgramSemester> GetProgramSemester(int CourseIndustryID, int CourseID, int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select mus.Score1,mus.ScoreFinal,ROUND((cast(fd.d4 as FLOAT)),1) AS D4,
@@ -521,8 +540,8 @@ left join ModulesUserScore mus on mus.ModulesID=tbl.ModulesID and UserID=@UserID
 left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
 group by  fd.d4,tbl.chk,mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
 order by tbl.SemesterID",
-            new { @CourseIndustryID = CourseIndustryID, @CourseID= CourseID , @TermID = _configuration["TERMID"].ToString(), @UserID= UserID }).ToList();
-           
+            new { @CourseIndustryID = CourseIndustryID, @CourseID = CourseID, @TermID = _configuration["TERMID"].ToString(), @UserID = UserID }).ToList();
+
             if (obj != null)
             {
                 return obj;
@@ -604,7 +623,7 @@ join vnk_User u on u.UserID= us.UserID",
             List<Certificate> obj = sqlconnection.Query<Certificate>(@"select cc.CertificateName,cc.CertificateCode,cu.ID from CertificateChannel cc
 join CertificateCI cci on cci.CertificateID=cc.CertificateID and cci.CourseIndustryID=@CourseIndustryID
 left join CertificateUser cu on cu.CertificateID=cc.CertificateID and UserID=@UserID",
-                new { @UserID = UserID , @CourseIndustryID = CourseIndustryID }).ToList();
+                new { @UserID = UserID, @CourseIndustryID = CourseIndustryID }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -631,7 +650,7 @@ where ic.ModulesID=@ModulesID and ic.CourseID=@CourseID AND IC.TERMID=@TERMID
 group by m.ModulesName,ic.ModulesID,rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
 GROUP BY tbl.ModulesName,tbl.IndependentClassID,tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits,tbl.ModulesID)TBL2
 group by tbl2.ModulesName,tbl2.IndependentClassID,tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits,tbl2.ModulesID",
-                new { @ModulesID = ModulesID, @TERMID= _configuration["TERMID"].ToString(), @CourseID= CourseID, @CourseIndustryID = CourseIndustryID }).ToList();
+                new { @ModulesID = ModulesID, @TERMID = _configuration["TERMID"].ToString(), @CourseID = CourseID, @CourseIndustryID = CourseIndustryID }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -691,7 +710,7 @@ join vnk_User u on u.UserID=cu.UserID",
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             int obj = sqlconnection.Execute(@"INSERT INTO VNK_COMMENT(OwnerID,Content,CreatedTime) VALUES(@OwerID, @Content,getdate())",
-                new { @OwerID = UserID, @Content=content });
+                new { @OwerID = UserID, @Content = content });
             if (obj > 0)
             {
                 return "Y";
@@ -705,7 +724,7 @@ join vnk_User u on u.UserID=cu.UserID",
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             sqlconnection.Open();
-            var trans= sqlconnection.BeginTransaction();
+            var trans = sqlconnection.BeginTransaction();
             try
             {
                 int obj = sqlconnection.Execute(@"INSERT INTO IndependentClassUserRegister(UserID,OwnerID,IndependentClassID,CreatedTime) VALUES(@UserID,@OwerID,@IndependentClassID,getdate())
@@ -728,7 +747,7 @@ INSERT INTO vnk_IndependentClassUser(IndependentClassID,ModulesID,UserID,Costs,P
                 trans.Rollback();
                 return "N";
             }
-            
+
         }
         public string DeleteDKHP(int UserID, int IndependentClassID)
         {
@@ -1032,7 +1051,7 @@ left join RoomStudy rs on rs.IndependentClassID=ic.IndependentClassID
 where icu.UserID=@UserID and ic.TermID=@TermID 
 group by m.ModulesName,m.ModulesId,ic.ClassName, rs.DayStudy, rs.TimesInDay, rs.StudyTime,ic.IndependentClassID) tbl
 group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.ModulesId,tbl.TimesInDay",
-                new { @UserID = UserID , @TermID = _configuration["TERMID"].ToString() }).ToList();
+                new { @UserID = UserID, @TermID = _configuration["TERMID"].ToString() }).ToList();
             if (obj != null)
             {
                 return obj;
@@ -1042,7 +1061,7 @@ group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.M
                 return new List<DKHPByTKB>();
             }
         }
-        public List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy,int CourseIndustryID,int CourseID)
+        public List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy, int CourseIndustryID, int CourseID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
@@ -1059,7 +1078,7 @@ where  ic.CourseID=@CourseID and ic.termid=@termid and rs.TimesInDay=@TimesInDay
 group by rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
 GROUP BY tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
 group by tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
-                new { @TimesInDay = TimesInDay, @DayStudy = DayStudy, @termid= _configuration["TERMID"].ToString(), @CourseIndustryID= CourseIndustryID, @CourseID= CourseID }).ToList();
+                new { @TimesInDay = TimesInDay, @DayStudy = DayStudy, @termid = _configuration["TERMID"].ToString(), @CourseIndustryID = CourseIndustryID, @CourseID = CourseID }).ToList();
             if (obj != null)
             {
                 return obj;
