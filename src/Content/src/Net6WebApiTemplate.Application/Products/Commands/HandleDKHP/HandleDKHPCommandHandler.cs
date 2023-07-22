@@ -25,8 +25,7 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             decimal money = 0;
             List<KQHT> kQHTs = _productRepository.GetKQHTByUser(request.UserID);
             List<ExamResult> exams = _productRepository.GetExamResult(request.UserID);
-            //List<ProgramSemester> CHEKmd = _productRepository.GetProgramSemester(request.CourseIndustryID, request.CourseID, request.UserID);
-            if ((kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0) /*|| (CHEKmd != null && CHEKmd.Where(x => x.ModulesID == request.mdid && (x.ScoreFinal != null || x.D4 != null ||x.Score1!=null||x.XH!=null)).Count()>0)*/)
+            if (kQHTs != null && kQHTs.Where(x => x.ModulesID == request.mdid).Count() > 0)
             {
                 return "N|Đã đăng ký hoặc đã học học phần này trước đó";
             }
@@ -37,14 +36,31 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             List<ProgramSemester> programs = _productRepository.GetProgramSemester(request.CourseIndustryID,request.CourseID,request.UserID);
             if (programs.Count > 0)
             {
+                int mdtype = programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTypeID;
+                List<ProgramSemester> mdtypels = programs.Where(x=>x.ModulesTypeID==mdtype && x.ModulesTypeID == 6).ToList();
+                if (mdtypels.Count > 0)
+                {
+                    for(int a = 0; a < mdtypels.Count; a++)
+                    {
+                        if (kQHTs != null && kQHTs.Where(x => x.ModulesID == mdtypels[a].ModulesID).Count() > 0)
+                        {
+                            return "N|Đã đăng ký hoặc đã học học phần cùng nhóm tự chọn thể chất này trước đó";
+                        }
+                    } 
+                }
                 string[] mdht = !string.IsNullOrEmpty(programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT)? programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesHT.Split(','):new string[0];
                 string[] mdtq = !string.IsNullOrEmpty(programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTQ)? programs.Where(x => x.ModulesID == request.mdid).FirstOrDefault().ModulesTQ.Split(',') : new string[0] ;
                 if (mdht.Length > 0)
                 {
                     for (int i = 0; i < mdht.Length; i++)
                     {
+                        if (mdht[i].IndexOf("<br>") > 0)
+                        {
+                            mdht[i]=mdht[i].Replace("<br>", "").Trim();
+                        }
                         if (exams != null && exams.Where(x => x.ModulesCode == mdht[i].Trim() && x.ScoreFinal > 4).Count() <= 0)
                         {
+
                             return "N|Cần học học phần học trước của học phần này";
                         }
                     }
@@ -53,7 +69,11 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
                 {
                     for (int i = 0; i < mdtq.Length; i++)
                     {
-                        if (exams != null && exams.Where(x => x.ModulesID == int.Parse(mdtq[i].Trim()) && x.ScoreFinal > 4).Count() <= 0)
+                        if (mdtq[i].IndexOf("<br>") > 0)
+                        {
+                            mdtq[i] = mdtq[i].Replace("<br>", "").Trim();
+                        }
+                        if (exams != null && exams.Where(x => x.ModulesCode == mdtq[i].Trim() && x.ScoreFinal > 4).Count() <= 0)
                         {
                             return "N|Cần học hết các học phần tiên quyết của học phần này";
                         }

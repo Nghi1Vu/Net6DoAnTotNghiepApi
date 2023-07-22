@@ -521,24 +521,24 @@ update vnk_User set amount=@amount where UserID=@UserID",
         public List<ProgramSemester> GetProgramSemester(int CourseIndustryID, int CourseID, int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select mus.Score1,mus.ScoreFinal,ROUND((cast(fd.d4 as FLOAT)),1) AS D4,
+            List<ProgramSemester> obj = sqlconnection.Query<ProgramSemester>(@"select iif((select top 1 UserId from vnk_UserScore us where IndependentClassID=(select IndependentClassID from vnk_IndependentClassUser where ModulesID=mus.ModulesID and UserID= mus.UserID and isnull(Del,0)=0)) is not null, 1,0) kqht,mus.Score1,mus.ScoreFinal,ROUND((cast(fd.d4 as FLOAT)),1) AS D4,
 fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS,string_agg(tbl.ModulesTQ,', <br>')as ModulesTQ,string_agg(tbl.ModulesHT,', <br>') as ModulesHT, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1,iif(tbl.chk=1, 'x','') chked  from
 
-(select (select top 1 1 from IndependentClass where ModulesID=md.ModulesID AND CourseID = @CourseID
+(select (select top 1 1 from IndependentClass where ModulesID=md.ModulesID AND CourseID = ic.CourseID
 and TermID=@TermID) chk,md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits as CreditsS,(select ModulesCode from vnk_Modules where ModulesID=mp.ModulesIDPremise) as ModulesTQ,(select ModulesCode from vnk_Modules where ModulesID=mb.ModulesIDBefore) as ModulesHT, md.TimesBT,mt.TypeName,COUNT(*) CreatedClass, md.ModulesTypeID,pm.ProgramGroupID,md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName, (select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=0) as Credits0,(select Credits from CourseIndustrySemester where CourseIndustryID = p.CourseIndustryID  and SemesterID=pm.Semester and TypeID=1) as Credits1  from vnk_Modules md
 join Program p on p.StructProgramID = md.StructProgramID and p.CourseIndustryID = @CourseIndustryID
 left join ProgramGroup pg on pg.ProgramID = p.ProgramID
 join ProgramModules pm on(pm.ProgramGroupID= pg.ProgramGroupID or (pm.ProgramGroupID = 0)) and p.ProgramID = pm.ProgramID and md.ModulesID = pm.ModulesID and isnull(pm.Del, 0)= 0
-left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = @CourseID
+left join IndependentClass ic on ic.ModulesID = md.ModulesID and pm.Semester = ic.Semester and ic.CourseID = @CourseID 
 join Semester s on s.SemesterID=pm.Semester
 join ModulesType mt on mt.TypeID=md.ModulesTypeID
 left join ModulesBefore mb on mb.ModulesID=md.ModulesID and isnull(mb.Del,0)=0
 left join ModulesPremise mp on mp.ModulesID=md.ModulesID and isnull(mp.Del,0)=0
 join CourseIndustrySemester cis on cis.CourseIndustryID = p.CourseIndustryID and cis.TypeID = 0 and cis.SemesterID=pm.Semester
-group by md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID) as tbl
-left join ModulesUserScore mus on mus.ModulesID=tbl.ModulesID and UserID=@UserID
+group by ic.CourseID,md.ModulesID,md.TimesK,s.SemesterID,pg.MinCreditsLT,pg.MinCreditsTH,pg.MinCreditsK,pg.GroupName,cis.Credits,mp.ModulesIDPremise,mb.ModulesIDBefore,md.TimesBT,mt.TypeName, md.ModulesTypeID,pm.ProgramGroupID, md.ModulesCode, md.ModulesName,md.CreditsLT,md.CreditsTH,md.CreditsK, md.Credits,TimesLT,TimesTH,TimesTL, s.SemesterName,pm.Semester,p.CourseIndustryID) as tbl
+left join ModulesUserScore mus on mus.ModulesID=tbl.ModulesID and UserID=@UserID and exists(select 1 from vnk_IndependentClassUser where UserID=mus.UserID and ModulesID=mus.ModulesID and isnull(Del,0)=0)
 left join FormulaDetail fd on fd.FormulaID=mus.FormulaID and mus.ScoreFinal>=fd.StartScore and mus.ScoreFinal<=fd.EndScore
-group by  fd.d4,tbl.chk,mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
+group by  mus.ModulesID,mus.UserID,fd.d4,tbl.chk,mus.Score1,mus.ScoreFinal,fd.XH,fd.SymbolName,tbl.ModulesID,tbl.TimesK,tbl.SemesterID,tbl.MinCreditsLT,tbl.MinCreditsTH,tbl.MinCreditsK,tbl.GroupName,tbl.CreditsS, tbl.TimesBT,tbl.TypeName,tbl.CreatedClass, tbl.ModulesTypeID,tbl.ProgramGroupID,tbl.ModulesCode, tbl.ModulesName,tbl.CreditsLT,tbl.CreditsTH,tbl.CreditsK, tbl.Credits,TimesLT,TimesTH,TimesTL, tbl.SemesterName, tbl.Credits0,tbl.Credits1
 order by tbl.SemesterID",
             new { @CourseIndustryID = CourseIndustryID, @CourseID = CourseID, @TermID = _configuration["TERMID"].ToString(), @UserID = UserID }).ToList();
 
