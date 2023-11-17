@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Net6WebApiTemplate.Api.Contracts.Version1.Requests;
 using Net6WebApiTemplate.Api.Routes.Version1;
 using Net6WebApiTemplate.Application.Auth.Commands.SignIn;
@@ -14,9 +16,12 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
-        public AuthController(IMediator mediator)
+        private IConfiguration _configuration;
+
+        public AuthController(IMediator mediator, IConfiguration configuration)
         {
             _mediator = mediator;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -68,7 +73,18 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetIndex()
         {
-            return Content("Hello");
+            try
+            {
+                //var sqlconnection = _configuration.GetConnectionString("Net6WebApiConnection");
+                var chk = new SqlConnection(_configuration.GetConnectionString("Net6WebApiConnection"));
+                chk.Open();
+                return Content(chk.State.ToString());
+            }
+            catch(Exception ex)
+            {
+                return Content(ex.Message);
+            }
+           
         }
     }
 }

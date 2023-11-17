@@ -24,9 +24,9 @@ public class GetStudentInfoCommandHandler : IRequestHandler<GetStudentInfoComman
             StudentInfo studentInfos = _productRepository.GetStudentInfo(request.Username, request.Password);
             return studentInfos;
         }
-        catch
+        catch(Exception ex) 
         {
-            throw new UnauthorizedException("Invalid student.");
+            throw new UnauthorizedException(ex.Message);
         }
     }
 }

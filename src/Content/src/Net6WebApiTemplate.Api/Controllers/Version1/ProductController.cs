@@ -197,30 +197,38 @@ namespace Net6WebApiTemplate.Api.Controllers.Version1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetStudentInfo(GetStudentInfoCommand query)
         {
-            var rsInfo = await _mediator.Send(query);
-            if (rsInfo != null && rsInfo.UserId > 0)
+            try
             {
-                var claims = new[]
-               {
+                var rsInfo = await _mediator.Send(query);
+                if (rsInfo != null && rsInfo.UserId > 0)
+                {
+                    var claims = new[]
+                   {
     new Claim(JwtRegisteredClaimNames.Sub, rsInfo.Usercode),
     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 };
-                var stkey = _configuration["SecretKey"].ToString();
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(stkey));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["issuer"],
-                audience: _configuration["audience"],
-                claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(5),
-                    signingCredentials: creds);
+                    var stkey = _configuration["SecretKey"].ToString();
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(stkey));
+                    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken(
+                        issuer: _configuration["issuer"],
+                    audience: _configuration["audience"],
+                    claims: claims,
+                        expires: DateTime.UtcNow.AddMinutes(5),
+                        signingCredentials: creds);
 
-                return Ok(new { rsInfo, Key = new JwtSecurityTokenHandler().WriteToken(token) });
+                    return Ok(new { rsInfo, Key = new JwtSecurityTokenHandler().WriteToken(token) });
+                }
+                else
+                {
+                    return Ok(rsInfo);
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return Ok(rsInfo);
+                return BadRequest(ex.Message);
             }
+         
         }
         [HttpPost]
         [Route("/api/v{version:apiVersion}/GetStudentInfoByEmail")]

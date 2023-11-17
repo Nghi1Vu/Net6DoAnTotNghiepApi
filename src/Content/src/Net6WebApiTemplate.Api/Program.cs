@@ -212,7 +212,6 @@ else
     // Enable HTTP Strict Transport Security Protocol (HSTS)
     app.UseHsts();
 }
-
 // List of supported cultures for localization used in RequestLocalizationOptions
 var supportedCultures = new[]
 {
