@@ -84,7 +84,7 @@ public class HandleDKHPCommandHandler : IRequestHandler<HandleDKHPCommand, strin
             if (classes != null)
             {
                 var cls = classes.Where(x => x.IndependentClassID == request.id).FirstOrDefault();
-                if(tKB.Where(x=>x.TimesInDay==cls.TimesInDay && x.DayStudy==cls.DayStudy && (x.timeday.Contains(cls.timeday) || cls.timeday.Contains(x.timeday))).Count() > 0)
+                if(tKB.Where(x=>x.TimesInDay==cls.TimesInDay && x.DayStudy==cls.DayStudy&& x.timeday!=null && (x.timeday.Contains(cls.timeday) || cls.timeday.Contains(x.timeday))).Count() > 0)
                 {
                     return "N|Trùng lịch học";
                 }

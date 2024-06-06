@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using MediatR;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -368,7 +369,7 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                         }
                         else
                         {
-                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETUTCDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'SE Asia Standard Time', @Costs, @Description, @UserID)",
                   new { UserID = UserID, @Description = getttcn.ClassName, @Costs = -getttcn.Costs }, transLocal);
                         }
                     }
@@ -382,7 +383,7 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                         }
                         else
                         {
-                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                            sqlconnectionLocal.Execute("insert into logcharge(CreatedTime, Costs, Description, UserID) values(GETUTCDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'SE Asia Standard Time', @Costs, @Description, @UserID)",
                   new { UserID = UserID, @Description = "Thu học phí lớp: " + getttcn.ClassName + " - " + getttcn.ModulesName, @Costs = -getttcn.Costs }, transLocal);
                         }
                     }
@@ -393,13 +394,13 @@ update RLUser set Score=@Score where UserID=@UserID and RLAnswerID=@RLAnswerID A
                     {
                         if (id[i].IndexOf('k') == 0)
                         {
-                            obj = sqlconnection.Execute(@"update StudentAmount set paid=1 where UserID=@UserID and StudentAmountID=@id and Del=0
+                            obj = sqlconnection.Execute(@"update StudentAmount set paid=1 where UserID=@UserID and StudentAmountID=@id and isnull(Del,0)=0
 update vnk_User set amount=@amount where UserID=@UserID",
                   new { UserID = UserID, id = int.Parse(id[i].Substring(1, id[i].Length - 1)), amount = amount }, trans);
                         }
                         else
                         {
-                            obj = sqlconnection.Execute(@"update vnk_IndependentClassUser set paid=1 where IndependentClassID=@id and UserID=@UserID and Del=0
+                            obj = sqlconnection.Execute(@"update vnk_IndependentClassUser set paid=1 where IndependentClassID=@id and UserID=@UserID and isnull(Del,0)=0
 update vnk_User set amount=@amount where UserID=@UserID",
                   new { UserID = UserID, id = int.Parse(id[i]), amount = amount }, trans);
                         }
@@ -448,7 +449,7 @@ update vnk_User set amount=@amount where UserID=@UserID",
                 string[] id = odid.Split(',');
                 for (int i = 0; i < id.Length; i++)
                 {
-                    ChannelAmount getod = GetChannelAmount(0).Where(x => x.ChannelAmountID == int.Parse(id[i].Split('-')[0])).FirstOrDefault();
+                    ChannelAmount getod = GetChannelAmountBy(int.Parse(id[i].Split('-')[0])).FirstOrDefault();
                     amount = amount - (getod.Costs * int.Parse(id[i].Split('-')[1]));
                     if (amount < 0)
                     {
@@ -456,40 +457,37 @@ update vnk_User set amount=@amount where UserID=@UserID",
                     }
                     else
                     {
-                        sqlconnectionLocal.Execute(@"insert into LogCharge(CreatedTime, Costs, Description, UserID) values(GETDATE(), @Costs, @Description, @UserID)",
+                        sqlconnectionLocal.Execute(@"insert into LogCharge(CreatedTime, Costs, Description, UserID) values(GETUTCDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'SE Asia Standard Time', @Costs, @Description, @UserID)",
                    new { UserID = UserID, @Description = "Đăng ký DVHC: " + getod.ChannelAmountName + "(SL: " + int.Parse(id[i].Split('-')[1]) + ")", @Costs = -(getod.Costs * int.Parse(id[i].Split('-')[1])) }, transLocal);
                     }
-                }
-                if (amount > 0)
-                {
-                    for (int i = 0; i < id.Length; i++)
+                    if (amount > 0)
                     {
-                        obj = sqlconnection.Execute(@"insert into StudentAmount(Amount,Quantity,StatusID,UserID,CreatedTime,ChannelAmountID) values(@Amount,@Quantity,
+                        obj += sqlconnection.Execute(@"insert into StudentAmount(Amount,Quantity,StatusID,UserID,CreatedTime,ChannelAmountID) values(@AmountA,@Quantity,
 1,@UserID,GETDATE(),@ChannelAmountID)
 update vnk_User set amount=@amount where UserID=@UserID",
-              new { @UserID = UserID, @ChannelAmountID = int.Parse(id[i].Split('-')[0]), @amount = amount, @Quantity = int.Parse(id[i].Split('-')[1]) }, trans);
-                    }
+             new { @UserID = UserID, @ChannelAmountID = int.Parse(id[i].Split('-')[0]), @amount = amount, AmountA = getod.Costs, @Quantity = int.Parse(id[i].Split('-')[1]) }, trans);
 
-                    if (obj > 1)
-                    {
-                        transLocal.Commit();
-                        trans.Commit();
-                        return "Y";
                     }
                     else
                     {
                         transLocal.Rollback();
                         trans.Rollback();
-                        return "N";
+                        return "S";
                     }
+
+                }
+                if (obj == id.Length*2)
+                {
+                    transLocal.Commit();
+                    trans.Commit();
+                    return "Y";
                 }
                 else
                 {
                     transLocal.Rollback();
                     trans.Rollback();
-                    return "S";
+                    return "N";
                 }
-
             }
             catch
             {
@@ -679,7 +677,7 @@ JOIN RevenuesUser RU ON RL.RevenuesListID= RU.RevenuesListID where RU.UserID=@Us
         {
             using var sqlconnectionLocal = _connectionFactory.CreateConnectionLocal();
             sqlconnectionLocal.Open();
-            List<TradeHistory> obj = sqlconnectionLocal.Query<TradeHistory>(@"select CreatedTime, iif(LEFT(Costs,1)!='-','+',LEFT(Costs,1)) AS Status,iif(left(Costs,1)='-',SUBSTRING(CAST(Costs AS VARCHAR),1,LEN(CAST(Costs AS VARCHAR))),Costs) AS Costs,Description from LogCharge where UserID=@UserID",
+            List<TradeHistory> obj = sqlconnectionLocal.Query<TradeHistory>(@"select CreatedTime, iif(LEFT(Costs,1)='-' or Costs=0,'-','+') AS Status,iif(left(Costs,1)='-',SUBSTRING(CAST(Costs AS VARCHAR),1,LEN(CAST(Costs AS VARCHAR))),Costs) AS Costs,Description from LogCharge where UserID=@UserID",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
             {
@@ -793,6 +791,21 @@ WHERE TypeID=2 AND IsLock=0",
                 return new List<ChannelAmount>();
             }
         }
+        public List<ChannelAmount> GetChannelAmountBy(int ClassID)
+        {
+            using var sqlconnection = _connectionFactory.CreateConnection();
+            List<ChannelAmount> obj = sqlconnection.Query<ChannelAmount>(@"SELECT Day,ModifiedTime,ChannelAmountID,ChannelAmountName,(SELECT TOP 1 Amount FROM StudentAmount WHERE ChannelAmountID=CA.ChannelAmountID) AS Costs FROM ChannelAmount CA
+WHERE TypeID=2 AND IsLock=0 and CA.ChannelAmountID=@ClassID",
+                new { @ClassID = ClassID }).ToList();
+            if (obj != null)
+            {
+                return obj;
+            }
+            else
+            {
+                return new List<ChannelAmount>();
+            }
+        }
         public List<StudentAmount> GetStudentAmount(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
@@ -813,11 +826,12 @@ order by sa.CreatedTime desc",
         }
         public List<TTCN> GetTTCNDone(int UserID)
         {
+
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,ic.ClassName,m.Credits,icu.Costs,icu.Status from vnk_IndependentClassUser icu
-join IndependentClass ic on icu.IndependentClassID=ic.IndependentClassID
-join Modules m on m.ModulesID= ic.ModulesID
-where UserID=@UserID
+            List<TTCN> obj = sqlconnection.Query<TTCN>(@"            select ic.ClassCode,ic.ClassName,m.Credits,icu.Costs,icu.Status from vnk_IndependentClassUser icu
+join IndependentClass ic on icu.IndependentClassID = ic.IndependentClassID
+join Modules m on m.ModulesID = ic.ModulesID
+where UserID = @UserID and icu.Paid=1 and isnull(icu.Del,0)=0
 union all
 select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount,sa.Paid from StudentAmount sa
 join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
@@ -838,11 +852,11 @@ where sa.UserID=@UserID and sa.Paid=1 and (sa.StatusID =3 or sa.StatusID is null
             List<TTCN> obj = sqlconnection.Query<TTCN>(@"select ic.ClassCode,m.ModulesName,m.Credits,icu.Costs,icu.IndependentClassID as id from vnk_IndependentClassUser icu
 join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID 
 join Modules m on m.ModulesID=ic.ModulesID
-where icu.Paid=0 and icu.UserID=@UserID and icu.Del=0
+where icu.Paid=0 and icu.UserID=@UserID and isnull(icu.Del,0)=0
 union all
 select ca.ChannelAmountCode,ca.ChannelAmountName,null,sa.Amount,sa.StudentAmountID from StudentAmount sa
 join ChannelAmount ca on ca.ChannelAmountID=sa.ChannelAmountID
-where UserID=@UserID and Paid=0 and sa.Del=0",
+where UserID=@UserID and Paid=0 and isnull(sa.Del,0)=0",
                 new { @UserID = UserID }).ToList();
             if (obj != null)
             {
@@ -958,7 +972,7 @@ where icu.UserID=@UserID",
             using var sqlconnection = _connectionFactory.CreateConnection();
             List<TeachCalendarDetail> obj = sqlconnection.Query<TeachCalendarDetail>(@"select (select (Lastname+' '+Firstname) from vnk_User where UserID=(select top 1 UserID from IndependentClassTeacher where 
 IndependentClassID=ic.IndependentClassID))teachername,m.ModulesName,ictp.Day,ictp.Contents,et.Description,ictp.HaveTest from vnk_IndependentClassUser icu 
-left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.IndependentClassID and ictp.Del=0
+left join IndependentClassTimesPlan ictp on ictp.IndependentClassID=icu.IndependentClassID and isnull(ictp.Del,0)=0
 left join vnk_ExamTime et on et.ExamTimeID= ictp.TimesInday
 left join IndependentClass ic on ic.IndependentClassID=icu.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
@@ -1018,7 +1032,7 @@ group by IC.IndependentClassID,ic.termid,c.CampusName,r.RoomName,d.DepartmentNam
         public List<LogDKHP> GetLogDKHP(int UserID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<LogDKHP> obj = sqlconnection.Query<LogDKHP>(@"select icur.OwnerID,(u.Lastname+' '+u.Firstname) as register,m.ModulesName,ic.ClassName,ic.ClassCode,icur.Del,icur.CreatedTime,icur.RegisterID,s.SemesterName from IndependentClassUserRegister icur
+            List<LogDKHP> obj = sqlconnection.Query<LogDKHP>(@"select icur.OwnerID,(u.Lastname+' '+u.Firstname) as register,m.ModulesName,ic.ClassName,ic.ClassCode,isnull(icur.Del,0) as Del,icur.CreatedTime,icur.RegisterID,s.SemesterName from IndependentClassUserRegister icur
 left join IndependentClass ic on ic.IndependentClassID=icur.IndependentClassID
 left join Modules m on m.ModulesID=ic.ModulesID
 left join Semester s on s.SemesterID=ic.Semester
@@ -1064,8 +1078,8 @@ group by tbl.IndependentClassID,tbl.ClassName,tbl.DayStudy,tbl.ModulesName,tbl.M
         public List<IndependentClass> GetICByTKB(int TimesInDay, int DayStudy, int CourseIndustryID, int CourseID)
         {
             using var sqlconnection = _connectionFactory.CreateConnection();
-            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
-(select rs.TimesInDay,((select cast(count(*) as varchar(50)) from vnk_IndependentClassUser where IndependentClassID=ic.IndependentClassID)+'/'+cast(ic.MaxStudent as varchar(50))) as SSSV , 
+            List<IndependentClass> obj = sqlconnection.Query<IndependentClass>(@"select tbl2.IndependentClassID,tbl2.TimesInDay,tbl2.DayStudy,MIN(tbl2.timeday) AS timeday, max(tbl2.RoomName) roomname,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits from (SELECT tbl.IndependentClassID,tbl.TimesInDay,tbl.DayStudy, STRING_AGG(tbl.StudyTime,',') as timeday,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits FROM
+(select ic.IndependentClassID,rs.TimesInDay,((select cast(count(*) as varchar(50)) from vnk_IndependentClassUser where IndependentClassID=ic.IndependentClassID)+'/'+cast(ic.MaxStudent as varchar(50))) as SSSV , 
  rs.DayStudy,rs.StudyTime,cafci.Amount,r.RoomName,ic.ClassName,ic.ClassCode, (select (Lastname + ' ' + Firstname) from vnk_User where UserID=ict.UserID) as Teachername,ic.StartDate,m.Credits from vnk_IndependentClass ic
 left join vnk_Modules m on m.ModulesID=ic.ModulesID 
 left join IndependentClassTeacherChange ictc on ictc.IndependentClassID=ic.IndependentClassID
@@ -1076,8 +1090,8 @@ CourseIndustryID=@CourseIndustryID and ModulesTypeID=m.ModulesTypeID)
 left join IndependentClassTeacher ict on ict.IndependentClassID=ic.IndependentClassID
 where  ic.CourseID=@CourseID and ic.termid=@termid and rs.TimesInDay=@TimesInDay and DayStudy=@DayStudy
 group by rs.TimesInDay,ic.IndependentClassID,RS.DayStudy,RS.StudyTime,cafci.Amount,R.RoomName,ic.ClassName,ict.UserID,ic.ClassCode,ic.StartDate,m.Credits,ic.MaxStudent) AS TBL
-GROUP BY tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
-group by tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
+GROUP BY tbl.IndependentClassID,tbl.TimesInDay,tbl.DayStudy,tbl.SSSV,TBL.Amount,TBL.RoomName, TBL.ClassName, TBL.ClassCode, TBL.Teachername, TBL.StartDate, TBL.Credits)TBL2
+group by tbl2.IndependentClassID,tbl2.TimesInDay,tbl2.DayStudy,tbl2.SSSV,tbl2.Amount, tbl2.ClassName, tbl2.ClassCode, tbl2.Teachername, tbl2.StartDate, tbl2.Credits",
                 new { @TimesInDay = TimesInDay, @DayStudy = DayStudy, @termid = _configuration["TERMID"].ToString(), @CourseIndustryID = CourseIndustryID, @CourseID = CourseID }).ToList();
             if (obj != null)
             {
